@@ -25,7 +25,7 @@ export function AuthPanel() {
         <p className="mt-4 text-sm text-slate-600">Loading session…</p>
       ) : user ? (
         <div className="mt-4">
-          <p className="font-semibold text-slate-900">Signed in as {user.name}</p>
+          <p className="font-semibold text-slate-900">Signed in as {user.fullName}</p>
           <p className="text-sm text-slate-500">{user.email}</p>
           <button
             className="mt-4 rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 disabled:opacity-50"

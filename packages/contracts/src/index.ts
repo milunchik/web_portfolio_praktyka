@@ -83,6 +83,17 @@ export interface Language {
   updatedAt: string | Date;
 }
 
+export interface Media {
+  id: number;
+  userId: number;
+  url: string;
+  fileName: string;
+  mimeType: string;
+  size: number;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+}
+
 export interface PaginatedResponse<T> {
   data: T[];
   meta: {

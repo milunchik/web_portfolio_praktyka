@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
-import { AppConfigModule, PrismaModule } from './infrastructure';
+import { AppConfigModule, PrismaModule, StorageModule } from './infrastructure';
 import { SharedModule, SecurityModule } from './shared';
 import {
   AuthModule,
@@ -10,12 +10,14 @@ import {
   EducationModule,
   ProjectModule,
   LanguageModule,
+  MediaModule,
 } from './modules';
 
 @Module({
   imports: [
     AppConfigModule,
     PrismaModule,
+    StorageModule,
     SecurityModule,
     SharedModule,
     AuthModule,
@@ -24,6 +26,7 @@ import {
     EducationModule,
     ProjectModule,
     LanguageModule,
+    MediaModule,
   ],
   controllers: [AppController],
   providers: [AppService],

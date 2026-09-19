@@ -6,6 +6,7 @@ import {
   MailConfig,
   AuthConfig,
   CorsConfig,
+  StorageConfig,
 } from '../../shared/types';
 
 @Injectable()
@@ -72,6 +73,14 @@ export class AppConfigService {
       secretLife: this.config.get('JWT_SECRET_LIFE_TIME'),
       refreshSecretLife: this.config.get('JWT_REFRESH_LIFE_TIME'),
       sessionCount: this.config.get('MAX_COUNT_SESSIONS'),
+    };
+  }
+
+  get storage(): StorageConfig {
+    return {
+      supabaseUrl: this.config.get('SUPABASE_URL'),
+      supabaseKey: this.config.get('SUPABASE_KEY'),
+      supabaseBucket: this.config.get('SUPABASE_BUCKET') ?? 'media',
     };
   }
 }

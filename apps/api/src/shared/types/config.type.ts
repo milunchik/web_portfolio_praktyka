@@ -27,6 +27,12 @@ export type AuthConfig = {
   sessionCount: number;
 };
 
+export type StorageConfig = {
+  supabaseUrl?: string;
+  supabaseKey?: string;
+  supabaseBucket: string;
+};
+
 export type CorsConfig = {
   credentials: boolean;
   enabled: boolean;

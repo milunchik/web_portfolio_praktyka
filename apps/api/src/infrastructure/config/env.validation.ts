@@ -48,6 +48,10 @@ export const envSchema = z.object({
   JWT_SECRET_LIFE_TIME: z.string().optional(),
   JWT_REFRESH_LIFE_TIME: z.string().optional(),
   MAX_COUNT_SESSIONS: z.coerce.number().optional(),
+
+  SUPABASE_URL: z.string().optional(),
+  SUPABASE_KEY: z.string().optional(),
+  SUPABASE_BUCKET: z.string().default('media'),
 });
 
 export type EnvVars = z.infer<typeof envSchema>;
