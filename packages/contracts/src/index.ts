@@ -46,6 +46,19 @@ export interface Experience {
   updatedAt: string | Date;
 }
 
+export type EducationDegree = 'bachelor' | 'master';
+
+export interface Education {
+  id: number;
+  userId: number;
+  title: string;
+  degree: EducationDegree;
+  startDate: string | Date;
+  endDate: string | Date | null;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+}
+
 export interface PaginatedResponse<T> {
   data: T[];
   meta: {

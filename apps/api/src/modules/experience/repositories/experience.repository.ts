@@ -51,8 +51,8 @@ export interface UpdateExperienceData {
 export abstract class ExperienceRepository {
   abstract findById(id: number): Promise<ExperienceEntity | null>;
   abstract findByUserId(userId: number): Promise<ExperienceEntity[]>;
-  abstract findAll(conditions?: any): Promise<ExperienceEntity[]>;
-  abstract count(conditions?: any): Promise<number>;
+  abstract findAll(conditions?: Record<string, unknown>): Promise<ExperienceEntity[]>;
+  abstract count(conditions?: Record<string, unknown>): Promise<number>;
   abstract create(userId: number, data: CreateExperienceData): Promise<ExperienceEntity>;
   abstract update(id: number, data: UpdateExperienceData): Promise<ExperienceEntity>;
   abstract delete(id: number): Promise<void>;
