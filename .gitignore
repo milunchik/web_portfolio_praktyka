@@ -1,0 +1,58 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+.turbo
+.next
+dist
+dist-ssr
+coverage
+.vitest
+*.local
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+
+# Supabase CLI local state (keep config and migrations tracked)
+supabase/.branches
+supabase/.temp
+
+# Local secrets, keys, and certificates
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+*.jks
+*.keystore
+*.env.backup
+*.secret
+secrets/
+private/
+
+# Local database and test artifacts
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+playwright-report/
+test-results/
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

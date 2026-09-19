@@ -1,0 +1,39 @@
+services:
+  api:
+    build:
+      context: .
+      target: api
+    environment:
+      PORT: 3001
+      WEB_URL: http://localhost:3000
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - fetch('http://localhost:3001/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    ports:
+      - '3001:3001'
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      target: web
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:3001
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      API_URL: http://api:3001
+      NEXT_PUBLIC_API_URL: http://localhost:3001
+      HOSTNAME: 0.0.0.0
+      PORT: 3000
+    ports:
+      - '3000:3000'
+    restart: unless-stopped

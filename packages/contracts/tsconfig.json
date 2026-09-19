@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "Node16",
+    "target": "ES2023",
+    "noEmit": true
+  },
+  "include": ["src/**/*.ts"]
+}
