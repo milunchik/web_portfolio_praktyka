@@ -3,7 +3,7 @@ import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { AppConfigModule, PrismaModule } from './infrastructure';
 import { SharedModule, SecurityModule } from './shared';
-import { AuthModule, UserModule, ExperienceModule, EducationModule } from './modules';
+import { AuthModule, UserModule, ExperienceModule, EducationModule, ProjectModule } from './modules';
 
 @Module({
   imports: [
@@ -15,6 +15,7 @@ import { AuthModule, UserModule, ExperienceModule, EducationModule } from './mod
     UserModule,
     ExperienceModule,
     EducationModule,
+    ProjectModule,
   ],
   controllers: [AppController],
   providers: [AppService],

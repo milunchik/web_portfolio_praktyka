@@ -59,6 +59,15 @@ export interface Education {
   updatedAt: string | Date;
 }
 
+export interface Project {
+  id: number;
+  userId: number;
+  title: string;
+  description: string;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+}
+
 export interface PaginatedResponse<T> {
   data: T[];
   meta: {
