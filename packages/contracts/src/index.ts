@@ -68,6 +68,21 @@ export interface Project {
   updatedAt: string | Date;
 }
 
+export type LanguageLevel =
+  | 'elementary'
+  | 'pre_intermediate'
+  | 'intermediate'
+  | 'upper_intermediate'
+  | 'advanced';
+
+export interface Language {
+  id: number;
+  name: string;
+  level: LanguageLevel;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+}
+
 export interface PaginatedResponse<T> {
   data: T[];
   meta: {
