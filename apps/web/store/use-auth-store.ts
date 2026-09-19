@@ -1,65 +1,82 @@
 import { create } from 'zustand';
+import type { SafeUser } from '@repo/contracts';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
-export type AuthUser = {
-  email: string;
-  id: string;
-  name: string;
-};
+export type AuthUser = SafeUser;
 
 type AuthState = {
   error: string | null;
   initialized: boolean;
   loading: boolean;
   user: AuthUser | null;
+  accessToken: string | null;
   loadSession: () => Promise<void>;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
 };
 
-async function readResponse(response: Response): Promise<{ message?: string; user: AuthUser | null }> {
-  return response.json() as Promise<{ message?: string; user: AuthUser | null }>;
-}
-
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   error: null,
   initialized: false,
   loading: false,
   user: null,
+  accessToken: null,
 
   loadSession: async () => {
     try {
-      const response = await fetch(`${API_URL}/auth/me`, { credentials: 'include' });
-      if (!response.ok) {
+      const token = get().accessToken;
+      if (!token) {
         set({ initialized: true, user: null });
         return;
       }
-      const data = await readResponse(response);
-      set({ initialized: true, user: data.user });
+      const response = await fetch(`${API_URL}/user/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        set({ initialized: true, user: null, accessToken: null });
+        return;
+      }
+      const user = (await response.json()) as SafeUser;
+      set({ initialized: true, user });
     } catch {
-      set({ error: 'Could not reach the authentication API', initialized: true, user: null });
+      set({
+        error: 'Could not reach the authentication API',
+        initialized: true,
+        user: null,
+      });
     }
   },
 
   login: async (email, password) => {
     set({ error: null, loading: true });
     try {
-      const response = await fetch(`${API_URL}/auth/login`, {
+      const response = await fetch(`${API_URL}/auth/signin`, {
         body: JSON.stringify({ email, password }),
-        credentials: 'include',
-        headers: { 'content-type': 'infrastructure/json' },
+        headers: { 'content-type': 'application/json' },
         method: 'POST',
       });
-      const data = await readResponse(response);
+      const data = await response.json();
       if (!response.ok) {
         set({ error: data.message ?? 'Login failed', loading: false });
         return false;
       }
-      set({ loading: false, user: data.user });
+      set({ accessToken: data.accessToken });
+      // Load user profile
+      const userRes = await fetch(`${API_URL}/user/me`, {
+        headers: { Authorization: `Bearer ${data.accessToken}` },
+      });
+      if (userRes.ok) {
+        const user = (await userRes.json()) as SafeUser;
+        set({ loading: false, user });
+      } else {
+        set({ loading: false });
+      }
       return true;
     } catch {
-      set({ error: 'The mock API is unavailable', loading: false });
+      set({ error: 'Authentication API is unavailable', loading: false });
       return false;
     }
   },
@@ -67,10 +84,16 @@ export const useAuthStore = create<AuthState>((set) => ({
   logout: async () => {
     set({ error: null, loading: true });
     try {
-      await fetch(`${API_URL}/auth/logout`, { credentials: 'include', method: 'POST' });
-      set({ loading: false, user: null });
+      const token = get().accessToken;
+      if (token) {
+        await fetch(`${API_URL}/auth/logout`, {
+          headers: { Authorization: `Bearer ${token}` },
+          method: 'GET',
+        });
+      }
+      set({ loading: false, user: null, accessToken: null });
     } catch {
-      set({ error: 'Logout failed', loading: false });
+      set({ error: 'Logout failed', loading: false, user: null, accessToken: null });
     }
   },
 }));

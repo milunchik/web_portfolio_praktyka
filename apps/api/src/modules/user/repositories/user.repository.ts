@@ -1,4 +1,5 @@
 import { UserRole } from '../../../shared/domain/types/user-role.type';
+import { SafeUserResDto } from '../dtos/res/safe-user.res.dto';
 
 export type { UserRole };
 
@@ -6,31 +7,61 @@ export class UserEntity {
   constructor(
     public readonly id: number,
     public readonly email: string,
+    public readonly fullName: string,
+    public readonly description: string | null,
     public readonly password: string,
-    public readonly name: string,
+    public readonly publicUrl: string,
     public readonly role: UserRole,
     public readonly createdAt: Date,
     public readonly updatedAt: Date,
+    public readonly education: any[] = [],
+    public readonly experience: any[] = [],
+    public readonly projects: any[] = [],
+    public readonly medias: any[] = [],
+    public readonly languages: any[] = [],
   ) {}
+
+  toSafeDto(): SafeUserResDto {
+    return {
+      id: this.id,
+      email: this.email,
+      fullName: this.fullName,
+      description: this.description,
+      publicUrl: this.publicUrl,
+      role: this.role,
+      education: this.education,
+      experience: this.experience,
+      medias: this.medias,
+      projects: this.projects,
+      languages: this.languages,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+    };
+  }
 }
 
 export interface CreateUserData {
   email: string;
   password: string;
-  name: string;
-  role: UserRole;
+  fullName: string;
+  role?: UserRole;
+  publicUrl: string;
+  description?: string | null;
 }
 
 export interface UpdateUserData {
   email?: string;
   password?: string;
-  name?: string;
+  fullName?: string;
   role?: UserRole;
+  publicUrl?: string;
+  description?: string | null;
 }
 
 export abstract class UserRepository {
   abstract findById(id: number): Promise<UserEntity | null>;
   abstract findByEmail(email: string): Promise<UserEntity | null>;
+  abstract findByPublicUrl(publicUrl: string): Promise<UserEntity | null>;
   abstract findAll(): Promise<UserEntity[]>;
   abstract count(): Promise<number>;
   abstract create(data: CreateUserData): Promise<UserEntity>;

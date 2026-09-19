@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class SafeUserResDto {
   @ApiProperty({ type: Number, example: 1 })
@@ -8,8 +8,35 @@ export class SafeUserResDto {
   email!: string;
 
   @ApiProperty({ type: String, example: 'John Doe' })
-  name!: string;
+  fullName!: string;
 
-  @ApiProperty({ type: String, example: 'user' })
+  @ApiPropertyOptional({ type: String, example: 'Fullstack developer', nullable: true })
+  description!: string | null;
+
+  @ApiProperty({ type: String, example: 'john-doe' })
+  publicUrl!: string;
+
+  @ApiProperty({ type: String, example: 'user', enum: ['admin', 'user'] })
   role!: string;
+
+  @ApiPropertyOptional({ example: [] })
+  education?: any[];
+
+  @ApiPropertyOptional({ example: [] })
+  experience?: any[];
+
+  @ApiPropertyOptional({ example: [] })
+  medias?: any[];
+
+  @ApiPropertyOptional({ example: [] })
+  projects?: any[];
+
+  @ApiPropertyOptional({ example: [] })
+  languages?: any[];
+
+  @ApiProperty()
+  createdAt!: Date;
+
+  @ApiProperty()
+  updatedAt!: Date;
 }

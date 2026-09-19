@@ -7,19 +7,26 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role{
+enum Role {
   admin
   user
 }
 
 model User {
-  id       Int   @id @default(autoincrement())
-  email    String @unique
-  password String
-  name     String
-  role    Role @default(user)
+  id          Int     @id @default(autoincrement())
+  email       String  @unique
+  fullName    String  @unique @db.VarChar(50)
+  description String? @db.VarChar(500)
+  password    String
+  publicUrl   String  @unique
+  role        Role    @default(user)
 
-  sessions Session[]
+  sessions   Session[]
+  education  Education[]
+  experience Experience[]
+  projects   Project[]
+  medias     Media[]
+  languages  LanguageUser[]
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt()
@@ -27,17 +34,108 @@ model User {
   @@map("user")
 }
 
-model Session {
-  id                    Int      @id @default(autoincrement())
-  userId                Int      
-  refreshToken          String   @unique 
-  accessToken           String   @unique 
-  accessTokenExpiresAt  DateTime? 
-  refreshTokenExpiresAt DateTime? 
-  deviceId             String?   
+model Experience {
+  id          Int       @id @default(autoincrement())
+  userId      Int
+  user        User      @relation(fields: [userId], references: [id])
+  company     String    @db.VarChar(100)
+  position    String    @db.VarChar(30)
+  description String    @db.VarChar(300)
+  startDate   DateTime
+  endDate     DateTime?
+  skills      String[]
 
-  createdAt DateTime @default(now()) 
-  updatedAt DateTime @updatedAt 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([company])
+  @@index([position])
+  @@map("experience")
+}
+
+enum EducationDegree {
+  bachelor
+  master
+}
+
+model Education {
+  id        Int             @id @default(autoincrement())
+  userId    Int
+  user      User            @relation(fields: [userId], references: [id])
+  title     String          @db.VarChar(50)
+  degree    EducationDegree @default(bachelor)
+  startDate DateTime
+  endDate   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([title])
+  @@map("education")
+}
+
+model Project {
+  id     Int  @id @default(autoincrement())
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+
+  title       String @db.VarChar(50)
+  description String @db.VarChar(500)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("projecct")
+}
+
+enum LanguageLevel {
+  elementary
+  pre_intermediate
+  intermediate
+  upper_intermediate
+  advanced
+}
+
+model Language {
+  id Int @id @default(autoincrement())
+
+  name  String         @db.VarChar(50)
+  level LanguageLevel
+  users LanguageUser[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
+  @@map("language")
+}
+
+model LanguageUser {
+  id         Int @id @default(autoincrement())
+  userId     Int
+  languageId Int
+
+  user     User     @relation(fields: [userId], references: [id])
+  language Language @relation(fields: [languageId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, languageId])
+  @@map("language_user_relation")
+}
+
+model Session {
+  id                    Int       @id @default(autoincrement())
+  userId                Int
+  refreshToken          String    @unique
+  accessToken           String    @unique
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  deviceId              String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id])
 
@@ -45,4 +143,22 @@ model Session {
   @@index([refreshToken])
   @@index([deviceId])
   @@map("session")
+}
+
+model Media {
+  id       Int    @id @default(autoincrement())
+  userId   Int
+  url      String
+  fileName String
+  mimeType String
+  size     Int    @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([url])
+  @@index([fileName])
+  @@map("media")
 }

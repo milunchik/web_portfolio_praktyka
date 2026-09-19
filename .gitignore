@@ -56,3 +56,6 @@ test-results/
 *.njsproj
 *.sln
 *.sw?
+
+*.md
+!README.md

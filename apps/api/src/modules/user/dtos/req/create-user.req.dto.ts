@@ -1,8 +1,9 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsEmail,
   IsEnum,
   IsNotEmpty,
+  IsOptional,
   IsString,
   Matches,
 } from 'class-validator';
@@ -28,10 +29,20 @@ export class CreateUserReqDto {
   @ApiProperty({ example: 'John Doe' })
   @IsNotEmpty()
   @IsString()
-  name!: string;
+  fullName!: string;
 
-  @ApiProperty({ example: 'user', enum: ['admin', 'user'] })
+  @ApiProperty({ example: 'john-doe' })
   @IsNotEmpty()
+  @IsString()
+  publicUrl!: string;
+
+  @ApiPropertyOptional({ example: 'Software engineer building web apps' })
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @ApiPropertyOptional({ example: 'user', enum: ['admin', 'user'] })
+  @IsOptional()
   @IsEnum(['admin', 'user'] as const)
-  role!: UserRole;
+  role?: UserRole;
 }

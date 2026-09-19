@@ -32,9 +32,6 @@ export class TokenService extends TokenPort {
     payload: AccessTokenPayload & { iat?: number; exp?: number },
   ): AccessTokenPayload {
     const { iat, exp, ...cleanPayload } = payload;
-    console.log(iat);
-    console.log(exp);
-
     return cleanPayload;
   }
 
