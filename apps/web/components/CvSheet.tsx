@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import { Mail, Globe, MapPin, Sparkles } from 'lucide-react';
-import type { SafeUser, Experience, Education, Project, Language } from '@repo/contracts';
+import { Mail, Globe } from 'lucide-react';
+import type { SafeUser, Experience, Education, Project } from '@repo/contracts';
 
 export interface CvDisplayOptionsState {
   showPhoto: boolean;
@@ -74,16 +74,22 @@ export const CvSheet: React.FC<CvSheetProps> = ({ user, options }) => {
     (user as any).medias?.[0]?.url ||
     null;
 
+  const publicPortfolioUrl = user.publicUrl
+    ? typeof window !== 'undefined'
+      ? `${window.location.origin}/user/${user.publicUrl}`
+      : `http://localhost:3000/user/${user.publicUrl}`
+    : null;
+
   return (
     <div
       id="cv-document"
-      className="relative mx-auto w-full max-w-[800px] rounded-2xl border border-slate-200 bg-white p-8 sm:p-12 shadow-md transition-all text-slate-800 font-sans"
+      className="relative mx-auto w-full max-w-[800px] rounded-2xl border border-slate-200 bg-white p-8 sm:p-12 shadow-md transition-all text-slate-800 font-sans print:border-none print:shadow-none print:rounded-none print:p-0 print:m-0 print:max-w-none print:w-full print:min-h-0"
       style={{ minHeight: '1050px' }}
     >
       {/* Top Header */}
-      <div className="flex items-start justify-between gap-6 border-b border-slate-200 pb-6">
+      <div className="flex items-start justify-between gap-6 border-b border-slate-200 pb-6 print:pb-4">
         <div className="space-y-1.5 flex-1">
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 print:text-2xl">
             {displayName}
           </h1>
           <p className="text-sm font-semibold text-emerald-700">
@@ -94,14 +100,14 @@ export const CvSheet: React.FC<CvSheetProps> = ({ user, options }) => {
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-2 text-xs text-slate-500">
               {user.email && (
                 <span className="flex items-center gap-1.5">
-                  <Mail className="h-3.5 w-3.5 text-slate-400" />
+                  <Mail className="h-3.5 w-3.5 text-slate-400 print:hidden" />
                   <span>{user.email}</span>
                 </span>
               )}
-              {user.publicUrl && (
+              {publicPortfolioUrl && (
                 <span className="flex items-center gap-1.5 font-mono">
-                  <Globe className="h-3.5 w-3.5 text-slate-400" />
-                  <span>devfolio.com/user/{user.publicUrl}</span>
+                  <Globe className="h-3.5 w-3.5 text-slate-400 print:hidden" />
+                  <span>{publicPortfolioUrl}</span>
                 </span>
               )}
             </div>
@@ -109,7 +115,7 @@ export const CvSheet: React.FC<CvSheetProps> = ({ user, options }) => {
         </div>
 
         {options.showPhoto && (
-          <div className="relative flex h-16 w-16 sm:h-20 sm:w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-2xl sm:text-3xl font-bold text-white shadow-xs">
+          <div className="relative flex h-16 w-16 sm:h-20 sm:w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-2xl sm:text-3xl font-bold text-white shadow-xs print:rounded-xl">
             {avatarPhotoUrl ? (
               <img
                 src={avatarPhotoUrl}
@@ -123,10 +129,10 @@ export const CvSheet: React.FC<CvSheetProps> = ({ user, options }) => {
         )}
       </div>
 
-      <div className="space-y-6 pt-6 text-xs">
+      <div className="space-y-6 pt-6 text-xs print:pt-4 print:space-y-5">
         {/* SUMMARY / ABOUT */}
         {options.showAbout && user.description && (
-          <section className="space-y-2">
+          <section className="space-y-2 print:break-inside-avoid">
             <h2 className="text-xs font-bold uppercase tracking-wider text-emerald-700 border-b border-emerald-100 pb-1">
               Professional Summary
             </h2>
@@ -138,13 +144,13 @@ export const CvSheet: React.FC<CvSheetProps> = ({ user, options }) => {
 
         {/* EXPERIENCE */}
         {options.showExperience && experiences.length > 0 && (
-          <section className="space-y-4">
+          <section className="space-y-4 print:break-inside-avoid">
             <h2 className="text-xs font-bold uppercase tracking-wider text-emerald-700 border-b border-emerald-100 pb-1">
               Work Experience
             </h2>
-            <div className="space-y-4">
+            <div className="space-y-4 print:space-y-3">
               {experiences.map((exp) => (
-                <div key={exp.id} className="space-y-1">
+                <div key={exp.id} className="space-y-1 print:break-inside-avoid">
                   <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between">
                     <span className="font-bold text-slate-900 text-sm">
                       {exp.position}{' '}
@@ -183,7 +189,7 @@ export const CvSheet: React.FC<CvSheetProps> = ({ user, options }) => {
 
         {/* EDUCATION */}
         {options.showEducation && educations.length > 0 && (
-          <section className="space-y-3">
+          <section className="space-y-3 print:break-inside-avoid">
             <h2 className="text-xs font-bold uppercase tracking-wider text-emerald-700 border-b border-emerald-100 pb-1">
               Education
             </h2>
@@ -191,7 +197,7 @@ export const CvSheet: React.FC<CvSheetProps> = ({ user, options }) => {
               {educations.map((edu) => (
                 <div
                   key={edu.id}
-                  className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between"
+                  className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between print:break-inside-avoid"
                 >
                   <div>
                     <span className="font-bold text-slate-900">
@@ -212,15 +218,15 @@ export const CvSheet: React.FC<CvSheetProps> = ({ user, options }) => {
 
         {/* PROJECTS */}
         {options.showProjects && projects.length > 0 && (
-          <section className="space-y-3">
+          <section className="space-y-3 print:break-inside-avoid">
             <h2 className="text-xs font-bold uppercase tracking-wider text-emerald-700 border-b border-emerald-100 pb-1">
               Featured Projects
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 print:grid-cols-2">
               {projects.map((proj) => (
                 <div
                   key={proj.id}
-                  className="rounded-xl border border-slate-100 bg-slate-50/60 p-3 space-y-1"
+                  className="rounded-xl border border-slate-100 bg-slate-50/60 p-3 space-y-1 print:border-slate-200 print:bg-white print:break-inside-avoid"
                 >
                   <h4 className="font-bold text-slate-900 text-xs">
                     {proj.title}
@@ -236,7 +242,7 @@ export const CvSheet: React.FC<CvSheetProps> = ({ user, options }) => {
 
         {/* SKILLS */}
         {options.showSkills && uniqueSkills.length > 0 && (
-          <section className="space-y-2">
+          <section className="space-y-2 print:break-inside-avoid">
             <h2 className="text-xs font-bold uppercase tracking-wider text-emerald-700 border-b border-emerald-100 pb-1">
               Technical Skills
             </h2>
@@ -244,7 +250,7 @@ export const CvSheet: React.FC<CvSheetProps> = ({ user, options }) => {
               {uniqueSkills.map((sk) => (
                 <span
                   key={sk}
-                  className="rounded-lg border border-slate-200 bg-white px-2 py-0.5 text-xs font-mono font-medium text-slate-700"
+                  className="rounded-lg border border-slate-200 bg-white px-2 py-0.5 text-xs font-mono font-medium text-slate-700 print:bg-slate-50"
                 >
                   {sk}
                 </span>
@@ -255,11 +261,11 @@ export const CvSheet: React.FC<CvSheetProps> = ({ user, options }) => {
 
         {/* LANGUAGES */}
         {options.showLanguages && rawLanguages.length > 0 && (
-          <section className="space-y-3">
+          <section className="space-y-3 print:break-inside-avoid">
             <h2 className="text-xs font-bold uppercase tracking-wider text-emerald-700 border-b border-emerald-100 pb-1">
               Languages
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 print:grid-cols-2">
               {rawLanguages.map((item) => {
                 const lang = item.language || item;
                 const name = lang.name || 'Language';
@@ -267,7 +273,7 @@ export const CvSheet: React.FC<CvSheetProps> = ({ user, options }) => {
                 const percent = getLevelPercentage(level);
 
                 return (
-                  <div key={item.id || name} className="space-y-1">
+                  <div key={item.id || name} className="space-y-1 print:break-inside-avoid">
                     <div className="flex justify-between text-xs font-medium">
                       <span className="text-slate-800">{name}</span>
                       <span className="text-slate-400 capitalize">

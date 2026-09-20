@@ -2,6 +2,7 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsEmail,
   IsEnum,
+  IsObject,
   IsOptional,
   IsString,
   Length,
@@ -9,6 +10,7 @@ import {
 } from 'class-validator';
 import { REGEX } from '../../../../shared/constants';
 import type { UserRole } from '../../repositories/user.repository';
+import type { CvDisplayOptions } from '@repo/contracts';
 
 export class UpdateUserReqDto {
   @ApiPropertyOptional({ example: 'user@example.com' })
@@ -43,4 +45,20 @@ export class UpdateUserReqDto {
   @IsOptional()
   @IsEnum(['admin', 'user'] as const)
   role?: UserRole;
+
+  @ApiPropertyOptional({
+    example: {
+      showPhoto: true,
+      showContact: true,
+      showAbout: true,
+      showExperience: true,
+      showEducation: true,
+      showSkills: true,
+      showLanguages: true,
+      showProjects: true,
+    },
+  })
+  @IsOptional()
+  @IsObject()
+  cvOptions?: CvDisplayOptions | null;
 }

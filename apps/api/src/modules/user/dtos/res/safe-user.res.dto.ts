@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import type { CvDisplayOptions } from '@repo/contracts';
 
 export class SafeUserResDto {
   @ApiProperty({ type: Number, example: 1 })
@@ -27,6 +28,21 @@ export class SafeUserResDto {
 
   @ApiPropertyOptional({ type: String, example: 'https://supabase.local/storage/v1/object/public/media/1/172678000-photo.jpg', nullable: true })
   fileUrl?: string | null;
+
+  @ApiPropertyOptional({
+    example: {
+      showPhoto: true,
+      showContact: true,
+      showAbout: true,
+      showExperience: true,
+      showEducation: true,
+      showSkills: true,
+      showLanguages: true,
+      showProjects: true,
+    },
+    nullable: true,
+  })
+  cvOptions?: CvDisplayOptions | null;
 
   @ApiPropertyOptional({ example: [] })
   education?: any[];

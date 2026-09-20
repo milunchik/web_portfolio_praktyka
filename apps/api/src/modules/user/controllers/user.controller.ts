@@ -6,6 +6,7 @@ import {
   Param,
   ParseIntPipe,
   Patch,
+  Query,
   Res,
   UseGuards,
 } from '@nestjs/common';
@@ -17,7 +18,7 @@ import {
   UpdateUserService,
   GenerateUserCvPdfService,
 } from '../services';
-import { UpdateUserReqDto } from '../dtos/req';
+import { UpdateUserReqDto, GenerateCvQueryDto } from '../dtos/req';
 import { SafeUserResDto } from '../dtos/res';
 import { JwtAuthGuard } from '../../../shared/guards';
 import { CurrentUser } from '../../../shared/decorators';
@@ -50,9 +51,10 @@ export class UserController {
   @Get('me/cv')
   async getMyCv(
     @CurrentUser() userId: number,
+    @Query() query: GenerateCvQueryDto,
     @Res() res: Response,
   ): Promise<void> {
-    const { buffer, fileName } = await this.generateUserCvPdfService.executeById(userId);
+    const { buffer, fileName } = await this.generateUserCvPdfService.executeById(userId, query);
     res.set({
       'Content-Type': 'application/pdf',
       'Content-Disposition': `inline; filename="${fileName}"`,
@@ -80,9 +82,10 @@ export class UserController {
   @Get('public/:publicUrl/cv')
   async getPublicCv(
     @Param('publicUrl') publicUrl: string,
+    @Query() query: GenerateCvQueryDto,
     @Res() res: Response,
   ): Promise<void> {
-    const { buffer, fileName } = await this.generateUserCvPdfService.executeByPublicUrl(publicUrl);
+    const { buffer, fileName } = await this.generateUserCvPdfService.executeByPublicUrl(publicUrl, query);
     res.set({
       'Content-Type': 'application/pdf',
       'Content-Disposition': `inline; filename="${fileName}"`,
@@ -107,9 +110,10 @@ export class UserController {
   @Get(':id/cv')
   async getUserCvById(
     @Param('id', ParseIntPipe) id: number,
+    @Query() query: GenerateCvQueryDto,
     @Res() res: Response,
   ): Promise<void> {
-    const { buffer, fileName } = await this.generateUserCvPdfService.executeById(id);
+    const { buffer, fileName } = await this.generateUserCvPdfService.executeById(id, query);
     res.set({
       'Content-Type': 'application/pdf',
       'Content-Disposition': `inline; filename="${fileName}"`,

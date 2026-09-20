@@ -58,6 +58,7 @@ export class PrismaUserRepository extends UserRepository {
       user.languages ?? [],
       user.fileName ?? null,
       avatarUrl,
+      (user.cvOptions as any) ?? null,
     );
   }
 
@@ -150,6 +151,7 @@ export class PrismaUserRepository extends UserRepository {
         description: data.description ?? null,
         fileName: data.fileName ?? null,
         role: (data.role as Role) ?? Role.user,
+        cvOptions: (data.cvOptions as any) ?? undefined,
       },
       include: {
         education: true,
@@ -178,6 +180,7 @@ export class PrismaUserRepository extends UserRepository {
         ...(data.description !== undefined && { description: data.description }),
         ...(data.fileName !== undefined && { fileName: data.fileName }),
         ...(data.role !== undefined && { role: data.role as Role }),
+        ...(data.cvOptions !== undefined && { cvOptions: data.cvOptions as any }),
       },
       include: {
         education: true,

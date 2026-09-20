@@ -38,6 +38,7 @@ import type {
   Experience,
   Education,
   Project,
+  CvDisplayOptions,
 } from '@repo/contracts';
 
 const formatLanguageLevel = (level: string) => {
@@ -71,7 +72,7 @@ const formatDateRange = (start: string | Date, end: string | Date | null | undef
   };
   const startFormatted = formatSingle(start);
   const endFormatted = end ? formatSingle(end) : 'Present';
-  return `${startFormatted} — ${endFormatted}`;
+  return `${startFormatted} \u2014 ${endFormatted}`;
 };
 
 export default function PublicPortfolioPage() {
@@ -105,7 +106,10 @@ export default function PublicPortfolioPage() {
     if (!publicUrl) return;
     setDownloading(true);
     try {
-      const blob = await userService.getCvBlobByPublicUrl(publicUrl);
+      const blob = await userService.getCvBlobByPublicUrl(
+        publicUrl,
+        user?.cvOptions || undefined,
+      );
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -164,6 +168,16 @@ export default function PublicPortfolioPage() {
     );
   }
 
+  const cvOpts = (user.cvOptions as CvDisplayOptions | null) || {};
+  const showPhoto = cvOpts.showPhoto !== false;
+  const showContact = cvOpts.showContact !== false;
+  const showAbout = cvOpts.showAbout !== false;
+  const showSkills = cvOpts.showSkills !== false;
+  const showProjects = cvOpts.showProjects !== false;
+  const showExperience = cvOpts.showExperience !== false;
+  const showEducation = cvOpts.showEducation !== false;
+  const showLanguages = cvOpts.showLanguages !== false;
+
   const displayName = user.fullName || 'Jane Doe';
   const initial = displayName.charAt(0).toUpperCase();
   const avatarPhotoUrl =
@@ -198,17 +212,19 @@ export default function PublicPortfolioPage() {
           <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-emerald-100/40 blur-3xl" />
 
           <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center gap-6 sm:gap-8">
-            <div className="relative flex h-24 w-24 sm:h-28 sm:w-28 shrink-0 items-center justify-center overflow-hidden rounded-3xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-4xl font-black text-white shadow-md">
-              {avatarPhotoUrl ? (
-                <img
-                  src={avatarPhotoUrl}
-                  alt={displayName}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                initial
-              )}
-            </div>
+            {showPhoto && (
+              <div className="relative flex h-24 w-24 sm:h-28 sm:w-28 shrink-0 items-center justify-center overflow-hidden rounded-3xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-4xl font-black text-white shadow-md">
+                {avatarPhotoUrl ? (
+                  <img
+                    src={avatarPhotoUrl}
+                    alt={displayName}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  initial
+                )}
+              </div>
+            )}
 
             <div className="space-y-3 flex-1">
               <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-xs font-semibold text-emerald-700">
@@ -225,7 +241,7 @@ export default function PublicPortfolioPage() {
                 </p>
               </div>
 
-              {user.description && (
+              {showAbout && user.description && (
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-2xl">
                   {user.description}
                 </p>
@@ -243,7 +259,7 @@ export default function PublicPortfolioPage() {
                   Download CV
                 </Button>
 
-                {user.email && (
+                {showContact && user.email && (
                   <a href={`mailto:${user.email}`}>
                     <Button
                       variant="outline"
@@ -260,7 +276,7 @@ export default function PublicPortfolioPage() {
         </section>
 
         {/* 2. ABOUT ME SECTION */}
-        {user.description && (
+        {showAbout && user.description && (
           <section id="about" className="space-y-4">
             <div className="space-y-1">
               <h2 className="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
@@ -281,7 +297,7 @@ export default function PublicPortfolioPage() {
         )}
 
         {/* 3. TECH STACK / SKILLS SECTION */}
-        {uniqueSkills.length > 0 && (
+        {showSkills && uniqueSkills.length > 0 && (
           <section id="skills" className="space-y-4">
             <div className="space-y-1">
               <h2 className="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
@@ -309,7 +325,7 @@ export default function PublicPortfolioPage() {
         )}
 
         {/* 4. PROJECTS SECTION */}
-        {projects.length > 0 && (
+        {showProjects && projects.length > 0 && (
           <section id="projects" className="space-y-4">
             <div className="space-y-1">
               <h2 className="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
@@ -352,7 +368,7 @@ export default function PublicPortfolioPage() {
         )}
 
         {/* 5. EXPERIENCE SECTION */}
-        {experiences.length > 0 && (
+        {showExperience && experiences.length > 0 && (
           <section id="experience" className="space-y-4">
             <div className="space-y-1">
               <h2 className="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
@@ -409,7 +425,7 @@ export default function PublicPortfolioPage() {
         )}
 
         {/* 6. EDUCATION SECTION */}
-        {educations.length > 0 && (
+        {showEducation && educations.length > 0 && (
           <section id="education" className="space-y-4">
             <div className="space-y-1">
               <h2 className="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
@@ -445,7 +461,7 @@ export default function PublicPortfolioPage() {
         )}
 
         {/* 7. LANGUAGES SECTION */}
-        {rawLanguages.length > 0 && (
+        {showLanguages && rawLanguages.length > 0 && (
           <section id="languages" className="space-y-4">
             <div className="space-y-1">
               <h2 className="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
@@ -486,33 +502,35 @@ export default function PublicPortfolioPage() {
         )}
 
         {/* 8. CONTACT / CTA SECTION */}
-        <section className="rounded-3xl border border-slate-200/80 bg-gradient-to-br from-slate-900 to-slate-800 p-8 sm:p-12 text-white shadow-xl text-center space-y-4">
-          <h2 className="text-2xl sm:text-3xl font-black tracking-tight">
-            Let&apos;s build something great together
-          </h2>
-          <p className="mx-auto max-w-md text-xs sm:text-sm text-slate-300 leading-relaxed">
-            I am always interested in discussing new opportunities, full-stack projects, and engineering challenges.
-          </p>
-          <div className="pt-2 flex justify-center gap-3">
-            {user.email && (
-              <a href={`mailto:${user.email}`}>
-                <Button variant="primary" size="lg" leftIcon={<Mail className="h-4 w-4" />}>
-                  Send an email
-                </Button>
-              </a>
-            )}
-            <Button
-              variant="outline"
-              size="lg"
-              className="bg-white/10 text-white border-white/20 hover:bg-white/20"
-              leftIcon={<Download className="h-4 w-4" />}
-              onClick={handleDownloadCv}
-              isLoading={downloading}
-            >
-              Get CV (PDF)
-            </Button>
-          </div>
-        </section>
+        {showContact && (
+          <section className="rounded-3xl border border-slate-200/80 bg-gradient-to-br from-slate-900 to-slate-800 p-8 sm:p-12 text-white shadow-xl text-center space-y-4">
+            <h2 className="text-2xl sm:text-3xl font-black tracking-tight">
+              Let&apos;s build something great together
+            </h2>
+            <p className="mx-auto max-w-md text-xs sm:text-sm text-slate-300 leading-relaxed">
+              I am always interested in discussing new opportunities, full-stack projects, and engineering challenges.
+            </p>
+            <div className="pt-2 flex justify-center gap-3">
+              {user.email && (
+                <a href={`mailto:${user.email}`}>
+                  <Button variant="primary" size="lg" leftIcon={<Mail className="h-4 w-4" />}>
+                    Send an email
+                  </Button>
+                </a>
+              )}
+              <Button
+                variant="outline"
+                size="lg"
+                className="bg-white/10 text-white border-white/20 hover:bg-white/20"
+                leftIcon={<Download className="h-4 w-4" />}
+                onClick={handleDownloadCv}
+                isLoading={downloading}
+              >
+                Get CV (PDF)
+              </Button>
+            </div>
+          </section>
+        )}
       </main>
 
       {/* Footer */}

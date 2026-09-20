@@ -1,5 +1,6 @@
 import { UserRole } from '../../../shared/domain/types/user-role.type';
 import { SafeUserResDto } from '../dtos/res/safe-user.res.dto';
+import type { CvDisplayOptions } from '@repo/contracts';
 
 export type { UserRole };
 
@@ -21,6 +22,7 @@ export class UserEntity {
     public readonly languages: any[] = [],
     public readonly fileName: string | null = null,
     public readonly avatarUrl: string | null = null,
+    public readonly cvOptions: CvDisplayOptions | null = null,
   ) {}
 
   toSafeDto(): SafeUserResDto {
@@ -34,6 +36,7 @@ export class UserEntity {
       fileName: this.fileName,
       avatarUrl: this.avatarUrl,
       fileUrl: this.avatarUrl,
+      cvOptions: this.cvOptions,
       education: this.education,
       experience: this.experience,
       medias: this.medias,
@@ -53,6 +56,7 @@ export interface CreateUserData {
   publicUrl: string;
   description?: string | null;
   fileName?: string | null;
+  cvOptions?: CvDisplayOptions | null;
 }
 
 export interface UpdateUserData {
@@ -63,6 +67,7 @@ export interface UpdateUserData {
   publicUrl?: string;
   description?: string | null;
   fileName?: string | null;
+  cvOptions?: CvDisplayOptions | null;
 }
 
 export abstract class UserRepository {

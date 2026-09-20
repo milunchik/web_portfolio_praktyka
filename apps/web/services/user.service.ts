@@ -1,5 +1,6 @@
 import { apiClient, ApiClient } from './api-client';
 import { SafeUser, UpdateUserRequest } from '../types/user.types';
+import type { CvDisplayOptions } from '@repo/contracts';
 
 export class UserService {
   constructor(private readonly client: ApiClient = apiClient) {}
@@ -20,16 +21,16 @@ export class UserService {
     return this.client.get<SafeUser>(`/user/public/${encodeURIComponent(publicUrl)}`);
   }
 
-  async getCvBlobMe(token?: string): Promise<Blob> {
-    return this.client.getBlob('/user/me/cv', { token });
+  async getCvBlobMe(options?: CvDisplayOptions, token?: string): Promise<Blob> {
+    return this.client.getBlob('/user/me/cv', { params: options as any, token });
   }
 
-  async getCvBlobById(id: number): Promise<Blob> {
-    return this.client.getBlob(`/user/${id}/cv`);
+  async getCvBlobById(id: number, options?: CvDisplayOptions): Promise<Blob> {
+    return this.client.getBlob(`/user/${id}/cv`, { params: options as any });
   }
 
-  async getCvBlobByPublicUrl(publicUrl: string): Promise<Blob> {
-    return this.client.getBlob(`/user/public/${encodeURIComponent(publicUrl)}/cv`);
+  async getCvBlobByPublicUrl(publicUrl: string, options?: CvDisplayOptions): Promise<Blob> {
+    return this.client.getBlob(`/user/public/${encodeURIComponent(publicUrl)}/cv`, { params: options as any });
   }
 }
 

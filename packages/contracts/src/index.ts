@@ -15,6 +15,7 @@ export interface SafeUser {
   fileName?: string | null;
   fileUrl?: string | null;
   avatarUrl?: string | null;
+  cvOptions?: CvDisplayOptions | null;
   education?: any[];
   experience?: any[];
   medias?: any[];
@@ -95,6 +96,17 @@ export interface Media {
   size: number;
   createdAt: string | Date;
   updatedAt: string | Date;
+}
+
+export interface CvDisplayOptions {
+  showPhoto?: boolean;
+  showContact?: boolean;
+  showAbout?: boolean;
+  showExperience?: boolean;
+  showEducation?: boolean;
+  showSkills?: boolean;
+  showLanguages?: boolean;
+  showProjects?: boolean;
 }
 
 export interface PaginatedResponse<T> {

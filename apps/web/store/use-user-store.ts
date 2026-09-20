@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { userService } from '../services/user.service';
 import { useAuthStore } from './use-auth-store';
 import type { SafeUser, UpdateUserRequest } from '../types';
+import type { CvDisplayOptions } from '@repo/contracts';
 
 interface UserState {
   profile: SafeUser | null;
@@ -13,9 +14,9 @@ interface UserState {
   updateProfile: (data: UpdateUserRequest) => Promise<SafeUser | null>;
   fetchPublicProfile: (publicUrl: string) => Promise<SafeUser | null>;
   fetchUserById: (id: number) => Promise<SafeUser | null>;
-  downloadCvMe: () => Promise<void>;
-  downloadCvByPublicUrl: (publicUrl: string) => Promise<void>;
-  downloadCvById: (id: number, fullName?: string) => Promise<void>;
+  downloadCvMe: (options?: CvDisplayOptions) => Promise<void>;
+  downloadCvByPublicUrl: (publicUrl: string, options?: CvDisplayOptions) => Promise<void>;
+  downloadCvById: (id: number, fullName?: string, options?: CvDisplayOptions) => Promise<void>;
   clearError: () => void;
 }
 
@@ -89,9 +90,9 @@ export const useUserStore = create<UserState>((set) => ({
     }
   },
 
-  downloadCvMe: async () => {
+  downloadCvMe: async (options?: CvDisplayOptions) => {
     try {
-      const blob = await userService.getCvBlobMe();
+      const blob = await userService.getCvBlobMe(options);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -103,9 +104,9 @@ export const useUserStore = create<UserState>((set) => ({
     }
   },
 
-  downloadCvByPublicUrl: async (publicUrl: string) => {
+  downloadCvByPublicUrl: async (publicUrl: string, options?: CvDisplayOptions) => {
     try {
-      const blob = await userService.getCvBlobByPublicUrl(publicUrl);
+      const blob = await userService.getCvBlobByPublicUrl(publicUrl, options);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -117,9 +118,9 @@ export const useUserStore = create<UserState>((set) => ({
     }
   },
 
-  downloadCvById: async (id: number, fullName?: string) => {
+  downloadCvById: async (id: number, fullName?: string, options?: CvDisplayOptions) => {
     try {
-      const blob = await userService.getCvBlobById(id);
+      const blob = await userService.getCvBlobById(id, options);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;

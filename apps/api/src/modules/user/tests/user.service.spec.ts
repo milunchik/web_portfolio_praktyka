@@ -1,18 +1,18 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
+import { UserRepository, UserEntity } from '../repositories/user.repository';
+import { CreateUserService } from '../services/create-user.service';
 import { FindUserByIdService } from '../services/find-user-by-id.service';
 import { FindUserByEmailService } from '../services/find-user-by-email.service';
 import { FindUserByPublicUrlService } from '../services/find-user-by-public-url.service';
-import { CreateUserService } from '../services/create-user.service';
 import { UpdateUserService } from '../services/update-user.service';
 import { GenerateUserCvPdfService } from '../services/generate-user-cv-pdf.service';
-import { UserRepository, UserEntity } from '../repositories/user.repository';
 
 describe('User Services', () => {
-  let findByIdService: FindUserByIdService;
-  let findByEmailService: FindUserByEmailService;
-  let findByPublicUrlService: FindUserByPublicUrlService;
   let createUserService: CreateUserService;
+  let findUserByIdService: FindUserByIdService;
+  let findUserByEmailService: FindUserByEmailService;
+  let findUserByPublicUrlService: FindUserByPublicUrlService;
   let updateUserService: UpdateUserService;
   let generateUserCvPdfService: GenerateUserCvPdfService;
 
@@ -20,8 +20,8 @@ describe('User Services', () => {
     1,
     'user@test.com',
     'User Test',
-    'Description of test user',
-    'pass123',
+    'A passionate fullstack engineer with React & Node experience.',
+    'hashedPassword123',
     'user-test-url',
     'user',
     new Date(),
@@ -29,128 +29,138 @@ describe('User Services', () => {
     [
       {
         id: 1,
-        title: 'Computer Science',
-        degree: 'bachelor',
+        userId: 1,
+        title: 'Master of Science in Software Engineering',
+        degree: 'master',
         startDate: new Date('2020-09-01'),
-        endDate: new Date('2024-06-30'),
+        endDate: new Date('2022-06-30'),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
     ],
     [
       {
         id: 1,
-        company: 'Tech Corp',
-        position: 'Software Engineer',
-        description: 'Building scalable web applications',
-        startDate: new Date('2022-01-01'),
+        userId: 1,
+        company: 'Tech Solutions LLC',
+        position: 'Senior Full Stack Developer',
+        description: 'Led architecture and development of core services.',
+        startDate: new Date('2022-07-01'),
         endDate: null,
-        skills: ['Node.js', 'NestJS', 'PostgreSQL'],
+        skills: ['TypeScript', 'NestJS', 'React', 'PostgreSQL'],
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
     ],
     [
       {
         id: 1,
-        title: 'Portfolio Website',
-        description: 'Personal portfolio application',
+        userId: 1,
+        title: 'E-commerce Platform',
+        description: 'Built scalable microservices.',
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
     ],
     [],
     [
       {
         id: 1,
-        language: {
-          id: 1,
-          name: 'English',
-          level: 'advanced',
-        },
+        name: 'English',
+        level: 'advanced',
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
     ],
+    null,
+    null,
   );
 
   const mockUserRepository = {
+    create: jest.fn(),
     findById: jest.fn(),
     findByEmail: jest.fn(),
     findByPublicUrl: jest.fn(),
-    findAll: jest.fn(),
-    count: jest.fn(),
-    create: jest.fn(),
     update: jest.fn(),
-    delete: jest.fn(),
   };
 
   beforeEach(async () => {
-    jest.clearAllMocks();
     const module: TestingModule = await Test.createTestingModule({
       providers: [
+        CreateUserService,
         FindUserByIdService,
         FindUserByEmailService,
         FindUserByPublicUrlService,
-        CreateUserService,
         UpdateUserService,
         GenerateUserCvPdfService,
         { provide: UserRepository, useValue: mockUserRepository },
       ],
     }).compile();
 
-    findByIdService = module.get<FindUserByIdService>(FindUserByIdService);
-    findByEmailService = module.get<FindUserByEmailService>(FindUserByEmailService);
-    findByPublicUrlService = module.get<FindUserByPublicUrlService>(FindUserByPublicUrlService);
     createUserService = module.get<CreateUserService>(CreateUserService);
+    findUserByIdService = module.get<FindUserByIdService>(FindUserByIdService);
+    findUserByEmailService = module.get<FindUserByEmailService>(FindUserByEmailService);
+    findUserByPublicUrlService = module.get<FindUserByPublicUrlService>(FindUserByPublicUrlService);
     updateUserService = module.get<UpdateUserService>(UpdateUserService);
     generateUserCvPdfService = module.get<GenerateUserCvPdfService>(GenerateUserCvPdfService);
+
+    jest.clearAllMocks();
+  });
+
+  describe('CreateUserService', () => {
+    it('should create and return a new user', async () => {
+      mockUserRepository.create.mockResolvedValue(mockUser);
+      const result = await createUserService.execute({
+        email: 'user@test.com',
+        fullName: 'User Test',
+        password: 'hashedPassword123',
+        publicUrl: 'user-test-url',
+      });
+      expect(result).toEqual(mockUser);
+      expect(mockUserRepository.create).toHaveBeenCalled();
+    });
   });
 
   describe('FindUserByIdService', () => {
-    it('should return user if found', async () => {
+    it('should find user by id', async () => {
       mockUserRepository.findById.mockResolvedValue(mockUser);
-      const result = await findByIdService.execute(1);
+      const result = await findUserByIdService.execute(1);
       expect(result).toEqual(mockUser);
       expect(mockUserRepository.findById).toHaveBeenCalledWith(1);
     });
 
-    it('should throw NotFoundException if not found', async () => {
+    it('should throw NotFoundException if user does not exist', async () => {
       mockUserRepository.findById.mockResolvedValue(null);
-      await expect(findByIdService.execute(999)).rejects.toThrow(NotFoundException);
+      await expect(findUserByIdService.execute(99)).rejects.toThrow(NotFoundException);
     });
   });
 
   describe('FindUserByEmailService', () => {
-    it('should return user by email', async () => {
+    it('should find user by email', async () => {
       mockUserRepository.findByEmail.mockResolvedValue(mockUser);
-      const result = await findByEmailService.execute('user@test.com');
+      const result = await findUserByEmailService.execute('user@test.com');
       expect(result).toEqual(mockUser);
+      expect(mockUserRepository.findByEmail).toHaveBeenCalledWith('user@test.com');
     });
 
-    it('should return null when user does not exist', async () => {
+    it('should return null if user with email does not exist', async () => {
       mockUserRepository.findByEmail.mockResolvedValue(null);
-      const result = await findByEmailService.execute('none@test.com');
+      const result = await findUserByEmailService.execute('none@test.com');
       expect(result).toBeNull();
     });
   });
 
   describe('FindUserByPublicUrlService', () => {
-    it('should return user by public url', async () => {
+    it('should find user by public url', async () => {
       mockUserRepository.findByPublicUrl.mockResolvedValue(mockUser);
-      const result = await findByPublicUrlService.execute('user-test-url');
+      const result = await findUserByPublicUrlService.execute('user-test-url');
       expect(result).toEqual(mockUser);
+      expect(mockUserRepository.findByPublicUrl).toHaveBeenCalledWith('user-test-url');
     });
 
-    it('should throw NotFoundException when public url does not exist', async () => {
+    it('should throw NotFoundException if user with public url does not exist', async () => {
       mockUserRepository.findByPublicUrl.mockResolvedValue(null);
-      await expect(findByPublicUrlService.execute('unknown-url')).rejects.toThrow(NotFoundException);
-    });
-  });
-
-  describe('CreateUserService', () => {
-    it('should create and return user entity', async () => {
-      mockUserRepository.create.mockResolvedValue(mockUser);
-      const result = await createUserService.execute({
-        email: 'user@test.com',
-        fullName: 'User Test',
-        password: 'hash',
-        publicUrl: 'user-test-url',
-      });
-      expect(result).toEqual(mockUser);
-      expect(mockUserRepository.create).toHaveBeenCalled();
+      await expect(findUserByPublicUrlService.execute('none-url')).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -172,6 +182,23 @@ describe('User Services', () => {
     it('should generate PDF buffer for user by ID', async () => {
       mockUserRepository.findById.mockResolvedValue(mockUser);
       const { buffer, fileName } = await generateUserCvPdfService.executeById(1);
+      expect(Buffer.isBuffer(buffer)).toBe(true);
+      expect(buffer.length).toBeGreaterThan(0);
+      expect(fileName).toBe('User_Test_CV.pdf');
+    });
+
+    it('should generate PDF buffer respecting custom display options', async () => {
+      mockUserRepository.findById.mockResolvedValue(mockUser);
+      const { buffer, fileName } = await generateUserCvPdfService.executeById(1, {
+        showPhoto: false,
+        showContact: false,
+        showAbout: false,
+        showExperience: false,
+        showEducation: false,
+        showSkills: false,
+        showLanguages: false,
+        showProjects: false,
+      });
       expect(Buffer.isBuffer(buffer)).toBe(true);
       expect(buffer.length).toBeGreaterThan(0);
       expect(fileName).toBe('User_Test_CV.pdf');

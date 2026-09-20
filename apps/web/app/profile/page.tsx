@@ -191,7 +191,7 @@ function ProfileSettingsContent() {
   };
 
   const handleCopyPublicUrl = () => {
-    const fullUrl = `${typeof window !== 'undefined' ? window.location.origin : 'https://devfolio.com'}/user/${publicUrl || 'jane-doe'}`;
+    const fullUrl = `${typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'}/user/${publicUrl || 'jane-doe'}`;
     navigator.clipboard.writeText(fullUrl);
     setCopiedUrl(true);
     setTimeout(() => setCopiedUrl(false), 2000);
@@ -592,13 +592,13 @@ function ProfileSettingsContent() {
                         <div className="flex gap-2">
                           <div className="relative flex-1">
                             <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-mono">
-                              https://devfolio.com/
+                              /user/
                             </span>
                             <input
                               type="text"
                               value={publicUrl}
                               onChange={(e) => setPublicUrl(e.target.value)}
-                              className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-44 pr-4 text-xs font-mono text-slate-900 transition hover:border-slate-300 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                              className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-16 pr-4 text-xs font-mono text-slate-900 transition hover:border-slate-300 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                             />
                           </div>
                           <Button

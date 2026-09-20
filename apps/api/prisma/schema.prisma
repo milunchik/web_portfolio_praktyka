@@ -21,6 +21,7 @@ model User {
   publicUrl   String  @unique
   role        Role    @default(user)
   fileName    String?
+  cvOptions   Json?
 
   sessions   Session[]
   education  Education[]

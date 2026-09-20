@@ -6,6 +6,7 @@ import { UpdateUserService } from '../services/update-user.service';
 import { GenerateUserCvPdfService } from '../services/generate-user-cv-pdf.service';
 import { TokenPort } from '../../../shared/domain/ports/token.port';
 import { UserEntity } from '../repositories/user.repository';
+import { GenerateCvQueryDto } from '../dtos/req/generate-cv-query.dto';
 import type { Response } from 'express';
 
 describe('UserController', () => {
@@ -82,8 +83,9 @@ describe('UserController', () => {
 
   it('should stream CV PDF on getMyCv', async () => {
     const res = createMockResponse();
-    await controller.getMyCv(1, res);
-    expect(mockGenerateUserCvPdfService.executeById).toHaveBeenCalledWith(1);
+    const query = new GenerateCvQueryDto();
+    await controller.getMyCv(1, query, res);
+    expect(mockGenerateUserCvPdfService.executeById).toHaveBeenCalledWith(1, query);
     expect(res.set).toHaveBeenCalledWith(
       expect.objectContaining({
         'Content-Type': 'application/pdf',
@@ -94,16 +96,18 @@ describe('UserController', () => {
 
   it('should stream CV PDF on getPublicCv', async () => {
     const res = createMockResponse();
-    await controller.getPublicCv('test-user-123', res);
-    expect(mockGenerateUserCvPdfService.executeByPublicUrl).toHaveBeenCalledWith('test-user-123');
+    const query = new GenerateCvQueryDto();
+    await controller.getPublicCv('test-user-123', query, res);
+    expect(mockGenerateUserCvPdfService.executeByPublicUrl).toHaveBeenCalledWith('test-user-123', query);
     expect(res.set).toHaveBeenCalled();
     expect(res.end).toHaveBeenCalledWith(mockPdfResult.buffer);
   });
 
   it('should stream CV PDF on getUserCvById', async () => {
     const res = createMockResponse();
-    await controller.getUserCvById(1, res);
-    expect(mockGenerateUserCvPdfService.executeById).toHaveBeenCalledWith(1);
+    const query = new GenerateCvQueryDto();
+    await controller.getUserCvById(1, query, res);
+    expect(mockGenerateUserCvPdfService.executeById).toHaveBeenCalledWith(1, query);
     expect(res.set).toHaveBeenCalled();
     expect(res.end).toHaveBeenCalledWith(mockPdfResult.buffer);
   });

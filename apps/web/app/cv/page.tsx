@@ -24,7 +24,7 @@ import { useUserStore } from '../../store/use-user-store';
 
 function CvPreviewContent() {
   const { user } = useAuthStore();
-  const { profile, fetchProfile, downloadCvMe } = useUserStore();
+  const { profile, fetchProfile, updateProfile, downloadCvMe } = useUserStore();
 
   const [options, setOptions] = useState<CvDisplayOptionsState>({
     showPhoto: true,
@@ -39,25 +39,57 @@ function CvPreviewContent() {
 
   const [isDownloading, setIsDownloading] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState(false);
+  const [isSavingOptions, setIsSavingOptions] = useState(false);
 
   useEffect(() => {
     fetchProfile();
   }, [fetchProfile]);
 
+  useEffect(() => {
+    const saved = (profile?.cvOptions || user?.cvOptions) as CvDisplayOptionsState | undefined;
+    if (saved && typeof saved === 'object') {
+      setOptions((prev) => ({
+        showPhoto: saved.showPhoto !== undefined ? Boolean(saved.showPhoto) : prev.showPhoto,
+        showContact: saved.showContact !== undefined ? Boolean(saved.showContact) : prev.showContact,
+        showAbout: saved.showAbout !== undefined ? Boolean(saved.showAbout) : prev.showAbout,
+        showExperience: saved.showExperience !== undefined ? Boolean(saved.showExperience) : prev.showExperience,
+        showEducation: saved.showEducation !== undefined ? Boolean(saved.showEducation) : prev.showEducation,
+        showSkills: saved.showSkills !== undefined ? Boolean(saved.showSkills) : prev.showSkills,
+        showLanguages: saved.showLanguages !== undefined ? Boolean(saved.showLanguages) : prev.showLanguages,
+        showProjects: saved.showProjects !== undefined ? Boolean(saved.showProjects) : prev.showProjects,
+      }));
+    }
+  }, [profile?.cvOptions, user?.cvOptions]);
+
   const currentUser = profile || user;
   const publicSlug = currentUser?.publicUrl || 'jane-doe';
+
+  const handleOptionChange = async (key: keyof CvDisplayOptionsState, val: boolean) => {
+    const newOptions = { ...options, [key]: val };
+    setOptions(newOptions);
+    setIsSavingOptions(true);
+    try {
+      await updateProfile({ cvOptions: newOptions });
+    } finally {
+      setIsSavingOptions(false);
+    }
+  };
 
   const handleDownload = async () => {
     setIsDownloading(true);
     try {
-      await downloadCvMe();
+      await downloadCvMe(options);
     } finally {
       setIsDownloading(false);
     }
   };
 
   const handleCopyLink = () => {
-    const fullUrl = `${typeof window !== 'undefined' ? window.location.origin : 'https://devfolio.com'}/user/${publicSlug}`;
+    const origin =
+      typeof window !== 'undefined'
+        ? window.location.origin
+        : 'http://localhost:3000';
+    const fullUrl = `${origin}/user/${publicSlug}`;
     navigator.clipboard.writeText(fullUrl);
     setCopiedUrl(true);
     setTimeout(() => setCopiedUrl(false), 2000);
@@ -78,21 +110,25 @@ function CvPreviewContent() {
   }
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
-      <AppSidebar />
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <AppHeader />
+    <div className="flex min-h-screen bg-slate-50 print:bg-white print:min-h-0 print:block">
+      <div className="print:hidden">
+        <AppSidebar />
+      </div>
+      <div className="flex flex-1 flex-col overflow-hidden print:overflow-visible print:block print:w-full">
+        <div className="print:hidden">
+          <AppHeader />
+        </div>
 
-        <main className="flex-1 overflow-y-auto px-6 py-8 sm:px-8">
-          <div className="mx-auto max-w-7xl space-y-6">
+        <main className="flex-1 overflow-y-auto px-6 py-8 sm:px-8 print:p-0 print:m-0 print:overflow-visible print:w-full print:block">
+          <div className="mx-auto max-w-7xl space-y-6 print:m-0 print:p-0 print:max-w-none print:w-full print:space-y-0">
             {/* Page Title */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 print:hidden">
               <div className="space-y-1">
                 <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
                   CV Preview
                 </h1>
                 <p className="text-sm text-slate-500">
-                  View and download your professional resume.
+                  View, customize and download your professional resume. Preferences are saved automatically.
                 </p>
               </div>
 
@@ -118,79 +154,74 @@ function CvPreviewContent() {
             </div>
 
             {/* 2-Column Layout */}
-            <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 print:block print:w-full print:gap-0">
               {/* Left Column (8 cols): Document Sheet Preview */}
-              <div className="lg:col-span-8 flex justify-center">
+              <div className="lg:col-span-8 flex justify-center print:w-full print:block print:p-0 print:m-0">
                 <CvSheet user={currentUser} options={options} />
               </div>
 
               {/* Right Column (4 cols): Display Options & Download Controls */}
-              <div className="space-y-6 lg:col-span-4">
+              <div className="space-y-6 lg:col-span-4 print:hidden">
                 {/* Display Options Panel */}
                 <div className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-xs space-y-4">
-                  <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-                    <Sliders className="h-4 w-4 text-emerald-600" />
-                    <h3 className="text-sm font-bold text-slate-900">
-                      Display Options
-                    </h3>
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div className="flex items-center gap-2">
+                      <Sliders className="h-4 w-4 text-emerald-600" />
+                      <h3 className="text-sm font-bold text-slate-900">
+                        Display Options
+                      </h3>
+                    </div>
+                    {isSavingOptions ? (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600">
+                        <Loader2 className="h-3 w-3 animate-spin" /> Saving...
+                      </span>
+                    ) : (
+                      <span className="text-[11px] font-medium text-slate-400">
+                        Saved to DB
+                      </span>
+                    )}
                   </div>
 
                   <div className="space-y-1 divide-y divide-slate-100">
                     <ToggleSwitch
                       label="Show profile photo"
                       checked={options.showPhoto}
-                      onChange={(val) =>
-                        setOptions({ ...options, showPhoto: val })
-                      }
+                      onChange={(val) => handleOptionChange('showPhoto', val)}
                     />
                     <ToggleSwitch
                       label="Show contact information"
                       checked={options.showContact}
-                      onChange={(val) =>
-                        setOptions({ ...options, showContact: val })
-                      }
+                      onChange={(val) => handleOptionChange('showContact', val)}
                     />
                     <ToggleSwitch
                       label="Show about me"
                       checked={options.showAbout}
-                      onChange={(val) =>
-                        setOptions({ ...options, showAbout: val })
-                      }
+                      onChange={(val) => handleOptionChange('showAbout', val)}
                     />
                     <ToggleSwitch
                       label="Show experience"
                       checked={options.showExperience}
-                      onChange={(val) =>
-                        setOptions({ ...options, showExperience: val })
-                      }
+                      onChange={(val) => handleOptionChange('showExperience', val)}
                     />
                     <ToggleSwitch
                       label="Show education"
                       checked={options.showEducation}
-                      onChange={(val) =>
-                        setOptions({ ...options, showEducation: val })
-                      }
+                      onChange={(val) => handleOptionChange('showEducation', val)}
                     />
                     <ToggleSwitch
                       label="Show skills"
                       checked={options.showSkills}
-                      onChange={(val) =>
-                        setOptions({ ...options, showSkills: val })
-                      }
+                      onChange={(val) => handleOptionChange('showSkills', val)}
                     />
                     <ToggleSwitch
                       label="Show languages"
                       checked={options.showLanguages}
-                      onChange={(val) =>
-                        setOptions({ ...options, showLanguages: val })
-                      }
+                      onChange={(val) => handleOptionChange('showLanguages', val)}
                     />
                     <ToggleSwitch
                       label="Show projects"
                       checked={options.showProjects}
-                      onChange={(val) =>
-                        setOptions({ ...options, showProjects: val })
-                      }
+                      onChange={(val) => handleOptionChange('showProjects', val)}
                     />
                   </div>
                 </div>
@@ -231,19 +262,17 @@ function CvPreviewContent() {
                       }
                       onClick={handleCopyLink}
                     >
-                      {copiedUrl ? 'Copied to clipboard' : 'Copy public link'}
+                      {copiedUrl ? 'Copied Public URL!' : 'Copy Public Portfolio URL'}
                     </Button>
-                  </div>
 
-                  <div className="border-t border-slate-100 pt-3 text-center">
-                    <Link
-                      href={`/user/${publicSlug}`}
-                      target="_blank"
-                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 hover:text-emerald-700 hover:underline"
-                    >
-                      <Eye className="h-3.5 w-3.5" />
-                      <span>View public portfolio</span>
-                      <ExternalLink className="h-3 w-3" />
+                    <Link href={`/user/${publicSlug}`} target="_blank" className="block">
+                      <Button
+                        variant="outline"
+                        fullWidth
+                        leftIcon={<ExternalLink className="h-4 w-4 text-slate-500" />}
+                      >
+                        View Live Public Page
+                      </Button>
                     </Link>
                   </div>
                 </div>

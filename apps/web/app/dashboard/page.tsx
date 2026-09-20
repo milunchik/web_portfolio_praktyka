@@ -204,7 +204,7 @@ export default function DashboardPage() {
                   Share this link with recruiters, employers, or on social media. It includes your bio, projects, experience, education, and generated CV.
                 </p>
                 <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 p-3 text-xs font-mono text-slate-800">
-                  <span className="text-slate-400">https://devfolio.com/user/</span>
+                  <span className="text-slate-400">/user/</span>
                   <span className="font-semibold text-emerald-700">{publicSlug}</span>
                 </div>
                 <div className="flex gap-3 pt-2">

@@ -1,10 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Optional } from '@nestjs/common';
 import PDFDocument from 'pdfkit';
+import * as fs from 'fs';
 import { UserRepository, UserEntity } from '../repositories/user.repository';
+import { AppConfigService } from '../../../infrastructure/config/config.service';
+import { GenerateCvQueryDto } from '../dtos/req/generate-cv-query.dto';
 
 @Injectable()
 export class GenerateUserCvPdfService {
-  constructor(private readonly userRepository: UserRepository) {}
+  constructor(
+    private readonly userRepository: UserRepository,
+    @Optional() private readonly config?: AppConfigService,
+  ) {}
 
   private formatDate(date: Date | string | null | undefined): string {
     if (!date) return 'Present';
@@ -14,30 +20,145 @@ export class GenerateUserCvPdfService {
   }
 
   private formatLevel(level: string): string {
-    return level.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
+    return level
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, (char) => char.toUpperCase());
   }
 
-  async executeById(userId: number): Promise<{ buffer: Buffer; fileName: string }> {
+  private async fetchImageBuffer(urlOrPath: string): Promise<Buffer | null> {
+    try {
+      if (!urlOrPath) return null;
+      if (urlOrPath.startsWith('data:image/')) {
+        const base64Data = urlOrPath.split(',')[1];
+        if (base64Data) {
+          return Buffer.from(base64Data, 'base64');
+        }
+      }
+      if (urlOrPath.startsWith('http://') || urlOrPath.startsWith('https://')) {
+        const res = await fetch(urlOrPath, { signal: AbortSignal.timeout(4000) });
+        if (!res.ok) return null;
+        const arrayBuf = await res.arrayBuffer();
+        return Buffer.from(arrayBuf);
+      }
+      if (fs.existsSync(urlOrPath)) {
+        return fs.readFileSync(urlOrPath);
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  private renderAvatar(
+    doc: PDFKit.PDFDocument,
+    photoBuffer: Buffer | null,
+    name: string,
+    x: number,
+    y: number,
+    size: number,
+  ): void {
+    if (photoBuffer) {
+      try {
+        doc.save();
+        doc.roundedRect(x, y, size, size, 10).clip();
+        doc.image(photoBuffer, x, y, {
+          width: size,
+          height: size,
+          fit: [size, size],
+          align: 'center',
+          valign: 'center',
+        });
+        doc.restore();
+        doc
+          .roundedRect(x, y, size, size, 10)
+          .strokeColor('#E2E8F0')
+          .lineWidth(1)
+          .stroke();
+        return;
+      } catch {
+        // Fallback to placeholder if image decode fails
+      }
+    }
+
+    // Avatar Placeholder with Initial
+    const initial = (name || 'U').trim().charAt(0).toUpperCase();
+    doc.save();
+    doc.roundedRect(x, y, size, size, 10).fillColor('#10B981').fill();
+    doc
+      .fillColor('#FFFFFF')
+      .fontSize(22)
+      .font('Helvetica-Bold')
+      .text(initial, x, y + 17, { width: size, align: 'center' });
+    doc.restore();
+  }
+
+  async executeById(
+    userId: number,
+    options?: GenerateCvQueryDto,
+  ): Promise<{ buffer: Buffer; fileName: string }> {
     const user = await this.userRepository.findById(userId);
     if (!user) {
       throw new NotFoundException(`User with ID ${userId} not found`);
     }
-    const buffer = await this.generatePdf(user);
+    const buffer = await this.generatePdf(user, options);
     const fileName = `${user.fullName.replace(/[^a-zA-Z0-9_-]/g, '_')}_CV.pdf`;
     return { buffer, fileName };
   }
 
-  async executeByPublicUrl(publicUrl: string): Promise<{ buffer: Buffer; fileName: string }> {
+  async executeByPublicUrl(
+    publicUrl: string,
+    options?: GenerateCvQueryDto,
+  ): Promise<{ buffer: Buffer; fileName: string }> {
     const user = await this.userRepository.findByPublicUrl(publicUrl);
     if (!user) {
       throw new NotFoundException(`User with public URL "${publicUrl}" not found`);
     }
-    const buffer = await this.generatePdf(user);
+    const buffer = await this.generatePdf(user, options);
     const fileName = `${user.fullName.replace(/[^a-zA-Z0-9_-]/g, '_')}_CV.pdf`;
     return { buffer, fileName };
   }
 
-  public generatePdf(user: UserEntity): Promise<Buffer> {
+  public async generatePdf(
+    user: UserEntity,
+    options?: GenerateCvQueryDto,
+  ): Promise<Buffer> {
+    const userCvOptions = (user.cvOptions as Record<string, boolean> | null) || {};
+
+    const resolveOption = (
+      queryVal: boolean | undefined,
+      dbVal: boolean | undefined,
+    ) => {
+      if (queryVal !== undefined) return queryVal;
+      if (dbVal !== undefined) return dbVal;
+      return true;
+    };
+
+    const showPhoto = resolveOption(options?.showPhoto, userCvOptions.showPhoto);
+    const showContact = resolveOption(options?.showContact, userCvOptions.showContact);
+    const showAbout = resolveOption(options?.showAbout, userCvOptions.showAbout);
+    const showExperience = resolveOption(options?.showExperience, userCvOptions.showExperience);
+    const showEducation = resolveOption(options?.showEducation, userCvOptions.showEducation);
+    const showSkills = resolveOption(options?.showSkills, userCvOptions.showSkills);
+    const showLanguages = resolveOption(options?.showLanguages, userCvOptions.showLanguages);
+    const showProjects = resolveOption(options?.showProjects, userCvOptions.showProjects);
+
+    const avatarUrl =
+      showPhoto
+        ? user.avatarUrl ||
+          user.fileName ||
+          user.medias?.[0]?.url ||
+          null
+        : null;
+
+    const photoBuffer = avatarUrl ? await this.fetchImageBuffer(avatarUrl) : null;
+
+    const rawWebUrl =
+      this.config?.corsOrigin ||
+      process.env.WEB_URL ||
+      process.env.APP_URL ||
+      'http://localhost:3000';
+    const webUrl = rawWebUrl.replace(/\/+$/, '');
+
     return new Promise((resolve, reject) => {
       const doc = new PDFDocument({
         size: 'A4',
@@ -53,99 +174,126 @@ export class GenerateUserCvPdfService {
       doc.on('end', () => resolve(Buffer.concat(chunks)));
       doc.on('error', (err) => reject(err));
 
-      const primaryColor = '#1E3A8A'; // Deep Slate Navy
-      const darkText = '#1F2937'; // Slate 800
-      const mutedText = '#6B7280'; // Slate 500
-      const accentBg = '#F3F4F6'; // Light gray
-      const dividerColor = '#E5E7EB';
+      const primaryColor = '#059669'; // Emerald 600
+      const darkText = '#0F172A'; // Slate 900
+      const bodyText = '#334155'; // Slate 700
+      const mutedText = '#64748B'; // Slate 500
+      const dividerColor = '#E2E8F0'; // Slate 200
+      const sectionLineColor = '#D1FAE5'; // Emerald 100
 
       // ================= HEADER =================
-      doc
-        .fillColor(primaryColor)
-        .fontSize(22)
-        .font('Helvetica-Bold')
-        .text(user.fullName, { align: 'left' });
+      const photoSize = 58;
+      const photoX = 595 - 40 - photoSize;
+      const photoY = 40;
 
-      doc.moveDown(0.2);
-
-      const contactItems: string[] = [];
-      if (user.email) contactItems.push(user.email);
-      if (user.publicUrl) contactItems.push(`portfolio.me/${user.publicUrl}`);
-
-      doc
-        .fillColor(mutedText)
-        .fontSize(10)
-        .font('Helvetica')
-        .text(contactItems.join('   |   '), { align: 'left' });
-
-      if (user.description) {
-        doc.moveDown(0.5);
-        doc
-          .fillColor(darkText)
-          .fontSize(10)
-          .font('Helvetica')
-          .text(user.description, { align: 'left', lineGap: 2 });
+      if (showPhoto) {
+        this.renderAvatar(doc, photoBuffer, user.fullName, photoX, photoY, photoSize);
       }
 
-      doc.moveDown(0.8);
+      const contentWidth = showPhoto ? photoX - 40 - 16 : 555 - 40;
+
       doc
-        .strokeColor(dividerColor)
-        .lineWidth(1)
-        .moveTo(40, doc.y)
-        .lineTo(555, doc.y)
-        .stroke();
+        .fillColor(darkText)
+        .fontSize(20)
+        .font('Helvetica-Bold')
+        .text(user.fullName, 40, 40, { width: contentWidth });
 
-      doc.moveDown(0.8);
+      doc.moveDown(0.2);
+      doc
+        .fillColor(primaryColor)
+        .fontSize(10.5)
+        .font('Helvetica-Bold')
+        .text('Software Engineer / Full-stack Developer', 40, doc.y, { width: contentWidth });
 
-      const renderSectionHeading = (title: string) => {
-        if (doc.y > 720) doc.addPage();
-        doc
-          .fillColor(primaryColor)
-          .fontSize(12)
-          .font('Helvetica-Bold')
-          .text(title.toUpperCase());
-        doc.moveDown(0.1);
-        doc
-          .strokeColor(primaryColor)
-          .lineWidth(1.5)
-          .moveTo(40, doc.y)
-          .lineTo(120, doc.y)
-          .stroke();
-        doc.moveDown(0.5);
-      };
+      if (showContact) {
+        const contactItems: string[] = [];
+        if (user.email) contactItems.push(user.email);
+        if (user.publicUrl) contactItems.push(`${webUrl}/user/${user.publicUrl}`);
 
-      // ================= WORK EXPERIENCE =================
-      if (user.experience && user.experience.length > 0) {
-        renderSectionHeading('Experience');
-
-        user.experience.forEach((exp: any) => {
-          if (doc.y > 700) doc.addPage();
-
-          // Position & Company
-          doc
-            .fillColor(darkText)
-            .fontSize(11)
-            .font('Helvetica-Bold')
-            .text(`${exp.position} `, { continued: true })
-            .fillColor(primaryColor)
-            .font('Helvetica')
-            .text(`@ ${exp.company}`);
-
-          // Dates
-          const dateRange = `${this.formatDate(exp.startDate)} – ${this.formatDate(exp.endDate)}`;
+        if (contactItems.length > 0) {
+          doc.moveDown(0.35);
           doc
             .fillColor(mutedText)
             .fontSize(9)
             .font('Helvetica')
-            .text(dateRange);
+            .text(contactItems.join('   |   '), 40, doc.y, { width: contentWidth });
+        }
+      }
 
-          doc.moveDown(0.2);
+      if (showAbout && user.description) {
+        doc.moveDown(0.45);
+        doc
+          .fillColor(bodyText)
+          .fontSize(9)
+          .font('Helvetica')
+          .text(user.description, 40, doc.y, { width: contentWidth, lineGap: 1.8 });
+      }
+
+      const headerBottom = showPhoto
+        ? Math.max(doc.y + 8, photoY + photoSize + 10)
+        : doc.y + 8;
+
+      doc
+        .strokeColor(dividerColor)
+        .lineWidth(1)
+        .moveTo(40, headerBottom)
+        .lineTo(555, headerBottom)
+        .stroke();
+
+      doc.y = headerBottom + 12;
+
+      const renderSectionHeading = (title: string) => {
+        if (doc.y > 730) doc.addPage();
+        doc.moveDown(0.3);
+        const headingY = doc.y;
+        doc
+          .fillColor(primaryColor)
+          .fontSize(9.5)
+          .font('Helvetica-Bold')
+          .text(title.toUpperCase(), 40, headingY);
+
+        const lineY = doc.y + 2;
+        doc
+          .strokeColor(sectionLineColor)
+          .lineWidth(1)
+          .moveTo(40, lineY)
+          .lineTo(555, lineY)
+          .stroke();
+
+        doc.y = lineY + 6;
+      };
+
+      // ================= WORK EXPERIENCE =================
+      if (showExperience && user.experience && user.experience.length > 0) {
+        renderSectionHeading('Work Experience');
+
+        user.experience.forEach((exp: any) => {
+          if (doc.y > 710) doc.addPage();
+
+          // Position & Company
+          doc
+            .fillColor(darkText)
+            .fontSize(10.5)
+            .font('Helvetica-Bold')
+            .text(`${exp.position} `, 40, doc.y, { continued: true })
+            .fillColor(primaryColor)
+            .font('Helvetica-Bold')
+            .text(`@ ${exp.company}`);
+
+          // Dates
+          const dateRange = `${this.formatDate(exp.startDate)} \u2014 ${this.formatDate(exp.endDate)}`;
+          doc
+            .fillColor(mutedText)
+            .fontSize(8.5)
+            .font('Helvetica')
+            .text(dateRange);
 
           // Description
           if (exp.description) {
+            doc.moveDown(0.2);
             doc
-              .fillColor(darkText)
-              .fontSize(9.5)
+              .fillColor(bodyText)
+              .fontSize(9)
               .font('Helvetica')
               .text(exp.description, { lineGap: 1.5 });
           }
@@ -155,79 +303,100 @@ export class GenerateUserCvPdfService {
             doc.moveDown(0.2);
             doc
               .fillColor(mutedText)
-              .fontSize(9)
+              .fontSize(8.5)
               .font('Helvetica-Bold')
               .text('Skills: ', { continued: true })
               .font('Helvetica')
+              .fillColor(bodyText)
               .text(exp.skills.join(', '));
           }
 
-          doc.moveDown(0.7);
+          doc.moveDown(0.6);
         });
-
-        doc.moveDown(0.3);
       }
 
       // ================= EDUCATION =================
-      if (user.education && user.education.length > 0) {
+      if (showEducation && user.education && user.education.length > 0) {
         renderSectionHeading('Education');
 
         user.education.forEach((edu: any) => {
-          if (doc.y > 700) doc.addPage();
+          if (doc.y > 710) doc.addPage();
 
           const degreeText = edu.degree
-            ? `${this.formatLevel(edu.degree)}'s Degree in `
+            ? ` \u2014 ${this.formatLevel(edu.degree)} Degree`
             : '';
 
           doc
             .fillColor(darkText)
-            .fontSize(11)
+            .fontSize(10)
             .font('Helvetica-Bold')
-            .text(`${degreeText}${edu.title}`);
+            .text(edu.title, 40, doc.y, { continued: Boolean(degreeText) });
 
-          const dateRange = `${this.formatDate(edu.startDate)} – ${this.formatDate(edu.endDate)}`;
+          if (degreeText) {
+            doc
+              .fillColor('#475569')
+              .font('Helvetica')
+              .text(degreeText);
+          }
+
+          const dateRange = `${this.formatDate(edu.startDate)} \u2014 ${this.formatDate(edu.endDate)}`;
           doc
             .fillColor(mutedText)
-            .fontSize(9)
+            .fontSize(8.5)
             .font('Helvetica')
             .text(dateRange);
 
-          doc.moveDown(0.6);
+          doc.moveDown(0.5);
         });
-
-        doc.moveDown(0.3);
       }
 
       // ================= PROJECTS =================
-      if (user.projects && user.projects.length > 0) {
-        renderSectionHeading('Projects');
+      if (showProjects && user.projects && user.projects.length > 0) {
+        renderSectionHeading('Featured Projects');
 
         user.projects.forEach((project: any) => {
-          if (doc.y > 700) doc.addPage();
+          if (doc.y > 710) doc.addPage();
 
           doc
             .fillColor(darkText)
-            .fontSize(11)
+            .fontSize(10)
             .font('Helvetica-Bold')
             .text(project.title);
 
           if (project.description) {
-            doc.moveDown(0.1);
+            doc.moveDown(0.15);
             doc
-              .fillColor(darkText)
-              .fontSize(9.5)
+              .fillColor(bodyText)
+              .fontSize(9)
               .font('Helvetica')
               .text(project.description, { lineGap: 1.5 });
           }
 
-          doc.moveDown(0.6);
+          doc.moveDown(0.5);
         });
+      }
 
-        doc.moveDown(0.3);
+      // ================= TECHNICAL SKILLS =================
+      if (showSkills) {
+        const uniqueSkills = Array.from(
+          new Set(
+            (user.experience || []).flatMap((exp: any) => exp.skills || []),
+          ),
+        ).filter(Boolean);
+
+        if (uniqueSkills.length > 0) {
+          renderSectionHeading('Technical Skills');
+          doc
+            .fillColor(bodyText)
+            .fontSize(9)
+            .font('Helvetica')
+            .text(uniqueSkills.join('   \u2022   '), { lineGap: 2 });
+          doc.moveDown(0.5);
+        }
       }
 
       // ================= LANGUAGES =================
-      if (user.languages && user.languages.length > 0) {
+      if (showLanguages && user.languages && user.languages.length > 0) {
         renderSectionHeading('Languages');
 
         user.languages.forEach((item: any) => {
@@ -239,19 +408,20 @@ export class GenerateUserCvPdfService {
 
           doc
             .fillColor(darkText)
-            .fontSize(10)
+            .fontSize(9.5)
             .font('Helvetica-Bold')
-            .text(`• ${name}`, { continued: Boolean(level) });
+            .text(`\u2022  ${name}`, { continued: Boolean(level) });
 
           if (level) {
             doc
               .fillColor(mutedText)
               .font('Helvetica')
-              .text(` — ${level}`);
+              .text(` \u2014 ${level}`);
           }
+          doc.moveDown(0.2);
         });
 
-        doc.moveDown(0.6);
+        doc.moveDown(0.4);
       }
 
       // Finalize document
