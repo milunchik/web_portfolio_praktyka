@@ -29,7 +29,7 @@ export class UploadMediaService {
 
     return this.mediaRepository.create(userId, {
       url,
-      fileName: originalName,
+      fileName: filePath,
       mimeType: file.mimetype || 'application/octet-stream',
       size: file.size || file.buffer.length,
     });

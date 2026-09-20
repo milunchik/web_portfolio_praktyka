@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { User, Role } from '@prisma/client';
 import { PrismaService } from '../../../infrastructure';
+import { StoragePort } from '../../../shared/domain/ports/storage.port';
 import {
   UserRepository,
   CreateUserData,
@@ -19,11 +20,27 @@ type PrismaUserWithRelations = User & {
 
 @Injectable()
 export class PrismaUserRepository extends UserRepository {
-  constructor(private readonly prisma: PrismaService) {
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly storage: StoragePort,
+  ) {
     super();
   }
 
   private toEntity(user: PrismaUserWithRelations): UserEntity {
+    let avatarUrl: string | null = null;
+    if (user.fileName) {
+      avatarUrl =
+        user.fileName.startsWith('http://') || user.fileName.startsWith('https://')
+          ? user.fileName
+          : this.storage.getPublicUrl(user.fileName);
+    } else if (user.medias && user.medias.length > 0) {
+      const lastMedia = user.medias[user.medias.length - 1];
+      avatarUrl =
+        lastMedia.url ||
+        (lastMedia.fileName ? this.storage.getPublicUrl(lastMedia.fileName) : null);
+    }
+
     return new UserEntity(
       user.id,
       user.email,
@@ -39,6 +56,8 @@ export class PrismaUserRepository extends UserRepository {
       user.projects ?? [],
       user.medias ?? [],
       user.languages ?? [],
+      user.fileName ?? null,
+      avatarUrl,
     );
   }
 
@@ -129,6 +148,7 @@ export class PrismaUserRepository extends UserRepository {
         fullName: data.fullName,
         publicUrl: data.publicUrl,
         description: data.description ?? null,
+        fileName: data.fileName ?? null,
         role: (data.role as Role) ?? Role.user,
       },
       include: {
@@ -156,6 +176,7 @@ export class PrismaUserRepository extends UserRepository {
         ...(data.fullName !== undefined && { fullName: data.fullName }),
         ...(data.publicUrl !== undefined && { publicUrl: data.publicUrl }),
         ...(data.description !== undefined && { description: data.description }),
+        ...(data.fileName !== undefined && { fileName: data.fileName }),
         ...(data.role !== undefined && { role: data.role as Role }),
       },
       include: {

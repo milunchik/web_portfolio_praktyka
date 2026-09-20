@@ -5,6 +5,7 @@ import { FindUserByEmailService } from '../services/find-user-by-email.service';
 import { FindUserByPublicUrlService } from '../services/find-user-by-public-url.service';
 import { CreateUserService } from '../services/create-user.service';
 import { UpdateUserService } from '../services/update-user.service';
+import { GenerateUserCvPdfService } from '../services/generate-user-cv-pdf.service';
 import { UserRepository, UserEntity } from '../repositories/user.repository';
 
 describe('User Services', () => {
@@ -13,17 +14,56 @@ describe('User Services', () => {
   let findByPublicUrlService: FindUserByPublicUrlService;
   let createUserService: CreateUserService;
   let updateUserService: UpdateUserService;
+  let generateUserCvPdfService: GenerateUserCvPdfService;
 
   const mockUser = new UserEntity(
     1,
     'user@test.com',
     'User Test',
-    'Description',
+    'Description of test user',
     'pass123',
     'user-test-url',
     'user',
     new Date(),
     new Date(),
+    [
+      {
+        id: 1,
+        title: 'Computer Science',
+        degree: 'bachelor',
+        startDate: new Date('2020-09-01'),
+        endDate: new Date('2024-06-30'),
+      },
+    ],
+    [
+      {
+        id: 1,
+        company: 'Tech Corp',
+        position: 'Software Engineer',
+        description: 'Building scalable web applications',
+        startDate: new Date('2022-01-01'),
+        endDate: null,
+        skills: ['Node.js', 'NestJS', 'PostgreSQL'],
+      },
+    ],
+    [
+      {
+        id: 1,
+        title: 'Portfolio Website',
+        description: 'Personal portfolio application',
+      },
+    ],
+    [],
+    [
+      {
+        id: 1,
+        language: {
+          id: 1,
+          name: 'English',
+          level: 'advanced',
+        },
+      },
+    ],
   );
 
   const mockUserRepository = {
@@ -46,6 +86,7 @@ describe('User Services', () => {
         FindUserByPublicUrlService,
         CreateUserService,
         UpdateUserService,
+        GenerateUserCvPdfService,
         { provide: UserRepository, useValue: mockUserRepository },
       ],
     }).compile();
@@ -55,6 +96,7 @@ describe('User Services', () => {
     findByPublicUrlService = module.get<FindUserByPublicUrlService>(FindUserByPublicUrlService);
     createUserService = module.get<CreateUserService>(CreateUserService);
     updateUserService = module.get<UpdateUserService>(UpdateUserService);
+    generateUserCvPdfService = module.get<GenerateUserCvPdfService>(GenerateUserCvPdfService);
   });
 
   describe('FindUserByIdService', () => {
@@ -123,6 +165,33 @@ describe('User Services', () => {
     it('should throw NotFoundException if user to update does not exist', async () => {
       mockUserRepository.findById.mockResolvedValue(null);
       await expect(updateUserService.execute(99, { fullName: 'Updated' })).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('GenerateUserCvPdfService', () => {
+    it('should generate PDF buffer for user by ID', async () => {
+      mockUserRepository.findById.mockResolvedValue(mockUser);
+      const { buffer, fileName } = await generateUserCvPdfService.executeById(1);
+      expect(Buffer.isBuffer(buffer)).toBe(true);
+      expect(buffer.length).toBeGreaterThan(0);
+      expect(fileName).toBe('User_Test_CV.pdf');
+    });
+
+    it('should generate PDF buffer for user by public URL', async () => {
+      mockUserRepository.findByPublicUrl.mockResolvedValue(mockUser);
+      const { buffer, fileName } = await generateUserCvPdfService.executeByPublicUrl('user-test-url');
+      expect(Buffer.isBuffer(buffer)).toBe(true);
+      expect(fileName).toBe('User_Test_CV.pdf');
+    });
+
+    it('should throw NotFoundException if user not found by ID', async () => {
+      mockUserRepository.findById.mockResolvedValue(null);
+      await expect(generateUserCvPdfService.executeById(999)).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw NotFoundException if user not found by public URL', async () => {
+      mockUserRepository.findByPublicUrl.mockResolvedValue(null);
+      await expect(generateUserCvPdfService.executeByPublicUrl('unknown')).rejects.toThrow(NotFoundException);
     });
   });
 });

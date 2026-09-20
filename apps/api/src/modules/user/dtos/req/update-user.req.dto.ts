@@ -34,6 +34,11 @@ export class UpdateUserReqDto {
   @IsString()
   publicUrl?: string;
 
+  @ApiPropertyOptional({ example: '1/172678000-avatar.jpg', nullable: true })
+  @IsOptional()
+  @IsString()
+  fileName?: string | null;
+
   @ApiPropertyOptional({ example: 'user', enum: ['admin', 'user'] })
   @IsOptional()
   @IsEnum(['admin', 'user'] as const)

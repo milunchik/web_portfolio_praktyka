@@ -20,6 +20,7 @@ model User {
   password    String
   publicUrl   String  @unique
   role        Role    @default(user)
+  fileName    String?
 
   sessions   Session[]
   education  Education[]

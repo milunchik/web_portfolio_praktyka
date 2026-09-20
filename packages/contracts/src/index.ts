@@ -12,6 +12,9 @@ export interface SafeUser {
   description: string | null;
   publicUrl: string;
   role: UserRole | string;
+  fileName?: string | null;
+  fileUrl?: string | null;
+  avatarUrl?: string | null;
   education?: any[];
   experience?: any[];
   medias?: any[];

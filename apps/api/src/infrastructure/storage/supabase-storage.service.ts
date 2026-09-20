@@ -11,15 +11,24 @@ export class SupabaseStorageService extends StoragePort {
   }
 
   getPublicUrl(filePath: string, bucket?: string): string {
+    if (!filePath) return '';
+    if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
+      return filePath;
+    }
+
     const targetBucket = bucket || this.config.storage.supabaseBucket || 'media';
     const supabaseUrl = this.config.storage.supabaseUrl;
 
+    const cleanPath = filePath
+      .replace(/^\/+/, '')
+      .replace(new RegExp(`^${targetBucket}/`), '');
+
     if (!supabaseUrl) {
-      return `https://supabase.local/storage/v1/object/public/${targetBucket}/${filePath}`;
+      return `https://supabase.local/storage/v1/object/public/${targetBucket}/${cleanPath}`;
     }
 
     const cleanUrl = supabaseUrl.replace(/\/+$/, '');
-    return `${cleanUrl}/storage/v1/object/public/${targetBucket}/${filePath}`;
+    return `${cleanUrl}/storage/v1/object/public/${targetBucket}/${cleanPath}`;
   }
 
   async upload(

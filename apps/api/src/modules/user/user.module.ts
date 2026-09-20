@@ -1,30 +1,35 @@
 import { Module } from '@nestjs/common';
+import { UserController } from './controllers/user.controller';
 import { UserRepository } from './repositories/user.repository';
 import { PrismaUserRepository } from './repositories/prisma-user.repository';
-import { FindUserByIdService } from './services/find-user-by-id.service';
-import { FindUserByEmailService } from './services/find-user-by-email.service';
-import { FindUserByPublicUrlService } from './services/find-user-by-public-url.service';
-import { CreateUserService } from './services/create-user.service';
-import { UpdateUserService } from './services/update-user.service';
-import { UserController } from './controllers/user.controller';
+import {
+  CreateUserService,
+  FindUserByIdService,
+  FindUserByEmailService,
+  FindUserByPublicUrlService,
+  UpdateUserService,
+  GenerateUserCvPdfService,
+} from './services';
 
 @Module({
+  controllers: [UserController],
   providers: [
     { provide: UserRepository, useClass: PrismaUserRepository },
+    CreateUserService,
     FindUserByIdService,
     FindUserByEmailService,
     FindUserByPublicUrlService,
-    CreateUserService,
     UpdateUserService,
+    GenerateUserCvPdfService,
   ],
-  controllers: [UserController],
   exports: [
     UserRepository,
+    CreateUserService,
     FindUserByIdService,
     FindUserByEmailService,
     FindUserByPublicUrlService,
-    CreateUserService,
     UpdateUserService,
+    GenerateUserCvPdfService,
   ],
 })
 export class UserModule {}

@@ -19,6 +19,8 @@ export class UserEntity {
     public readonly projects: any[] = [],
     public readonly medias: any[] = [],
     public readonly languages: any[] = [],
+    public readonly fileName: string | null = null,
+    public readonly avatarUrl: string | null = null,
   ) {}
 
   toSafeDto(): SafeUserResDto {
@@ -29,6 +31,9 @@ export class UserEntity {
       description: this.description,
       publicUrl: this.publicUrl,
       role: this.role,
+      fileName: this.fileName,
+      avatarUrl: this.avatarUrl,
+      fileUrl: this.avatarUrl,
       education: this.education,
       experience: this.experience,
       medias: this.medias,
@@ -47,6 +52,7 @@ export interface CreateUserData {
   role?: UserRole;
   publicUrl: string;
   description?: string | null;
+  fileName?: string | null;
 }
 
 export interface UpdateUserData {
@@ -56,6 +62,7 @@ export interface UpdateUserData {
   role?: UserRole;
   publicUrl?: string;
   description?: string | null;
+  fileName?: string | null;
 }
 
 export abstract class UserRepository {

@@ -19,6 +19,15 @@ export class SafeUserResDto {
   @ApiProperty({ type: String, example: 'user', enum: ['admin', 'user'] })
   role!: string;
 
+  @ApiPropertyOptional({ type: String, example: '1/172678000-photo.jpg', nullable: true })
+  fileName?: string | null;
+
+  @ApiPropertyOptional({ type: String, example: 'https://supabase.local/storage/v1/object/public/media/1/172678000-photo.jpg', nullable: true })
+  avatarUrl?: string | null;
+
+  @ApiPropertyOptional({ type: String, example: 'https://supabase.local/storage/v1/object/public/media/1/172678000-photo.jpg', nullable: true })
+  fileUrl?: string | null;
+
   @ApiPropertyOptional({ example: [] })
   education?: any[];
 
