@@ -6,3 +6,4 @@ export * from './education.types';
 export * from './project.types';
 export * from './language.types';
 export * from './media.types';
+export * from './analytics.types';

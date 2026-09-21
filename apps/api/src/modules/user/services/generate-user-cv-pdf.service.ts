@@ -207,26 +207,31 @@ export class GenerateUserCvPdfService {
 
       if (showContact) {
         const contactItems: string[] = [];
+        if (user.location) contactItems.push(user.location);
         if (user.email) contactItems.push(user.email);
+        if (user.website) contactItems.push(user.website.replace(/^https?:\/\//, ''));
+        if (user.github) contactItems.push(`github.com/${user.github.replace(/^https?:\/\/github\.com\//, '')}`);
+        if (user.linkedin) contactItems.push(`linkedin.com/in/${user.linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\/in\//, '')}`);
         if (user.publicUrl) contactItems.push(`${webUrl}/user/${user.publicUrl}`);
 
         if (contactItems.length > 0) {
           doc.moveDown(0.35);
           doc
             .fillColor(mutedText)
-            .fontSize(9)
+            .fontSize(8.5)
             .font('Helvetica')
-            .text(contactItems.join('   |   '), 40, doc.y, { width: contentWidth });
+            .text(contactItems.join('   •   '), 40, doc.y, { width: contentWidth });
         }
       }
 
-      if (showAbout && user.description) {
+      const aboutText = user.about || user.description;
+      if (showAbout && aboutText) {
         doc.moveDown(0.45);
         doc
           .fillColor(bodyText)
           .fontSize(9)
           .font('Helvetica')
-          .text(user.description, 40, doc.y, { width: contentWidth, lineGap: 1.8 });
+          .text(aboutText, 40, doc.y, { width: contentWidth, lineGap: 1.8 });
       }
 
       const headerBottom = showPhoto
@@ -281,7 +286,7 @@ export class GenerateUserCvPdfService {
             .text(`@ ${exp.company}`);
 
           // Dates
-          const dateRange = `${this.formatDate(exp.startDate)} \u2014 ${this.formatDate(exp.endDate)}`;
+          const dateRange = `${this.formatDate(exp.startDate)} — ${this.formatDate(exp.endDate)}`;
           doc
             .fillColor(mutedText)
             .fontSize(8.5)
@@ -323,7 +328,7 @@ export class GenerateUserCvPdfService {
           if (doc.y > 710) doc.addPage();
 
           const degreeText = edu.degree
-            ? ` \u2014 ${this.formatLevel(edu.degree)} Degree`
+            ? ` — ${this.formatLevel(edu.degree)} Degree`
             : '';
 
           doc
@@ -339,7 +344,7 @@ export class GenerateUserCvPdfService {
               .text(degreeText);
           }
 
-          const dateRange = `${this.formatDate(edu.startDate)} \u2014 ${this.formatDate(edu.endDate)}`;
+          const dateRange = `${this.formatDate(edu.startDate)} — ${this.formatDate(edu.endDate)}`;
           doc
             .fillColor(mutedText)
             .fontSize(8.5)
@@ -390,7 +395,7 @@ export class GenerateUserCvPdfService {
             .fillColor(bodyText)
             .fontSize(9)
             .font('Helvetica')
-            .text(uniqueSkills.join('   \u2022   '), { lineGap: 2 });
+            .text(uniqueSkills.join('   •   '), { lineGap: 2 });
           doc.moveDown(0.5);
         }
       }
@@ -399,32 +404,25 @@ export class GenerateUserCvPdfService {
       if (showLanguages && user.languages && user.languages.length > 0) {
         renderSectionHeading('Languages');
 
-        user.languages.forEach((item: any) => {
-          if (doc.y > 720) doc.addPage();
+        const langs = user.languages
+          .map((item: any) => {
+            const langName = item.language?.name || item.name;
+            const langLevel = item.language?.level || item.level;
+            if (!langName) return null;
+            return `${langName} (${this.formatLevel(langLevel || 'intermediate')})`;
+          })
+          .filter(Boolean);
 
-          const lang = item.language || item;
-          const name = lang.name || 'Language';
-          const level = lang.level ? this.formatLevel(lang.level) : '';
-
+        if (langs.length > 0) {
           doc
-            .fillColor(darkText)
-            .fontSize(9.5)
-            .font('Helvetica-Bold')
-            .text(`\u2022  ${name}`, { continued: Boolean(level) });
-
-          if (level) {
-            doc
-              .fillColor(mutedText)
-              .font('Helvetica')
-              .text(` \u2014 ${level}`);
-          }
-          doc.moveDown(0.2);
-        });
-
-        doc.moveDown(0.4);
+            .fillColor(bodyText)
+            .fontSize(9)
+            .font('Helvetica')
+            .text(langs.join('   •   '), { lineGap: 2 });
+          doc.moveDown(0.5);
+        }
       }
 
-      // Finalize document
       doc.end();
     });
   }

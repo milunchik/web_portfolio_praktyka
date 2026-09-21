@@ -5,3 +5,4 @@ export * from './education';
 export * from './project';
 export * from './language';
 export * from './media';
+export * from './analytics';

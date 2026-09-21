@@ -2,7 +2,6 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Download, Sparkles, ArrowUpRight } from 'lucide-react';
 import { Logo } from './Logo';
 import { Button } from './Button';
 
@@ -19,77 +18,62 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({
     e.preventDefault();
     const element = document.getElementById(id);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const yOffset = -90;
+      const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      window.scrollTo({ top: y, behavior: 'smooth' });
     }
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-200/80 bg-white/95 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-8">
+    <header className="sticky top-0 z-40 w-full border-b border-slate-200/80 bg-white/95 backdrop-blur-md shadow-2xs">
+      <div className="mx-auto flex h-20 max-w-[1200px] items-center justify-between px-4 sm:px-6">
         {/* Left: Brand Logo */}
-        <Link href="/" className="flex items-center gap-2">
-          <Logo size="sm" />
-        </Link>
+        <div className="flex items-center">
+          <Logo size="sm" showTagline={false} />
+        </div>
 
         {/* Center: In-page Navigation */}
-        <nav className="hidden items-center gap-6 md:flex">
-          <a
-            href="#about"
-            onClick={(e) => scrollToSection(e, 'about')}
-            className="text-xs font-semibold text-slate-600 transition-colors hover:text-emerald-600"
-          >
-            About
-          </a>
-          <a
-            href="#skills"
-            onClick={(e) => scrollToSection(e, 'skills')}
-            className="text-xs font-semibold text-slate-600 transition-colors hover:text-emerald-600"
-          >
-            Tech Stack
-          </a>
+        <nav className="hidden items-center gap-8 md:flex">
           <a
             href="#projects"
             onClick={(e) => scrollToSection(e, 'projects')}
-            className="text-xs font-semibold text-slate-600 transition-colors hover:text-emerald-600"
+            className="text-sm font-medium text-slate-600 transition-colors hover:text-emerald-600"
           >
             Projects
           </a>
           <a
             href="#experience"
             onClick={(e) => scrollToSection(e, 'experience')}
-            className="text-xs font-semibold text-slate-600 transition-colors hover:text-emerald-600"
+            className="text-sm font-medium text-slate-600 transition-colors hover:text-emerald-600"
           >
             Experience
           </a>
           <a
             href="#education"
             onClick={(e) => scrollToSection(e, 'education')}
-            className="text-xs font-semibold text-slate-600 transition-colors hover:text-emerald-600"
+            className="text-sm font-medium text-slate-600 transition-colors hover:text-emerald-600"
           >
             Education
           </a>
+          <a
+            href="#about"
+            onClick={(e) => scrollToSection(e, 'about')}
+            className="text-sm font-medium text-slate-600 transition-colors hover:text-emerald-600"
+          >
+            About
+          </a>
         </nav>
 
-        {/* Right: Actions */}
+        {/* Right: CTA Button */}
         <div className="flex items-center gap-3">
-          {onDownloadCv && (
+          <Link href="/signup">
             <Button
-              size="sm"
+              size="md"
               variant="primary"
-              isLoading={isDownloadingCv}
-              leftIcon={<Download className="h-3.5 w-3.5" />}
-              onClick={onDownloadCv}
+              className="font-semibold shadow-xs"
             >
-              Download CV
+              Get your own portfolio
             </Button>
-          )}
-
-          <Link
-            href="/signup"
-            className="hidden items-center gap-1 text-xs font-semibold text-slate-500 hover:text-emerald-600 transition sm:flex"
-          >
-            <span>Get your portfolio</span>
-            <ArrowUpRight className="h-3 w-3" />
           </Link>
         </div>
       </div>

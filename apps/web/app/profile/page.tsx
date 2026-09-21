@@ -45,6 +45,7 @@ import { useLanguageStore } from '../../store/use-language-store';
 import { useProjectStore } from '../../store/use-project-store';
 import { useMediaStore } from '../../store/use-media-store';
 import type { EducationDegree, LanguageLevel } from '@repo/contracts';
+import { MdOutlineLock } from "react-icons/md";
 
 type TabKey = 'general' | 'education' | 'experience' | 'projects' | 'languages' | 'media';
 
@@ -112,13 +113,14 @@ function ProfileSettingsContent() {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [description, setDescription] = useState('');
+  const [about, setAbout] = useState('');
   const [publicUrl, setPublicUrl] = useState('');
-  const [location, setLocation] = useState('Kyiv, Ukraine');
-  const [website, setWebsite] = useState('https://jane-doe.dev');
-  const [github, setGithub] = useState('jane-doe');
-  const [linkedin, setLinkedin] = useState('janedoe');
-  const [twitter, setTwitter] = useState('jane_doe');
-  const [dribbble, setDribbble] = useState('jane-doe');
+  const [location, setLocation] = useState('');
+  const [website, setWebsite] = useState('');
+  const [github, setGithub] = useState('');
+  const [linkedin, setLinkedin] = useState('');
+  const [twitter, setTwitter] = useState('');
+  const [dribbble, setDribbble] = useState('');
 
   // UI status
   const [isSaving, setIsSaving] = useState(false);
@@ -182,7 +184,14 @@ function ProfileSettingsContent() {
       setFullName(data.fullName || '');
       setEmail(data.email || '');
       setDescription(data.description || '');
+      setAbout(data.about || '');
       setPublicUrl(data.publicUrl || '');
+      setLocation(data.location || '');
+      setWebsite(data.website || '');
+      setGithub(data.github || '');
+      setLinkedin(data.linkedin || '');
+      setTwitter(data.twitter || '');
+      setDribbble(data.dribbble || '');
     }
   }, [profile, user]);
 
@@ -207,7 +216,14 @@ function ProfileSettingsContent() {
       const updated = await updateProfile({
         fullName: fullName.trim(),
         description: description.trim() || undefined,
+        about: about.trim() || undefined,
         publicUrl: publicUrl.trim() || undefined,
+        location: location.trim() || undefined,
+        website: website.trim() || undefined,
+        github: github.trim() || undefined,
+        linkedin: linkedin.trim() || undefined,
+        twitter: twitter.trim() || undefined,
+        dribbble: dribbble.trim() || undefined,
       });
 
       if (updated) {
@@ -506,15 +522,15 @@ function ProfileSettingsContent() {
                           Profile photo
                         </label>
                         <div className="flex items-center gap-5">
-                          <div className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-xl font-bold text-white shadow-xs">
+                          <div className="relative flex h-40 w-40 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 text-xl font-bold text-white shadow-xs">
                             {avatarPhotoUrl ? (
-                              <img
-                                src={avatarPhotoUrl}
-                                alt={displayName}
-                                className="h-full w-full object-cover"
-                              />
+                                <img
+                                    src={avatarPhotoUrl}
+                                    alt={displayName}
+                                    className="h-full w-full object-cover"
+                                />
                             ) : (
-                              displayName.charAt(0).toUpperCase()
+                                displayName.charAt(0).toUpperCase()
                             )}
                           </div>
                           <div className="space-y-1">
@@ -568,18 +584,38 @@ function ProfileSettingsContent() {
                       <div className="space-y-1.5 pt-2">
                         <div className="flex items-center justify-between">
                           <label className="text-xs font-medium text-slate-700">
-                            Short description
+                            Short description (Headline)
                           </label>
                           <span className="text-[11px] text-slate-400 font-mono">
                             {description.length}/500
                           </span>
                         </div>
                         <textarea
-                          rows={3}
+                          rows={2}
                           maxLength={500}
                           placeholder="Full-stack developer passionate about building modern web applications and solving real-world problems."
                           value={description}
                           onChange={(e) => setDescription(e.target.value)}
+                          className="w-full rounded-2xl border border-slate-200 bg-white p-3.5 text-xs text-slate-900 placeholder:text-slate-400 transition hover:border-slate-300 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                        />
+                      </div>
+
+                      {/* About me (Bio) */}
+                      <div className="space-y-1.5 pt-2">
+                        <div className="flex items-center justify-between">
+                          <label className="text-xs font-medium text-slate-700">
+                            About me (Detailed bio)
+                          </label>
+                          <span className="text-[11px] text-slate-400 font-mono">
+                            {about.length}/1500
+                          </span>
+                        </div>
+                        <textarea
+                          rows={4}
+                          maxLength={1500}
+                          placeholder="Tell your story, background, technical strengths, and passions..."
+                          value={about}
+                          onChange={(e) => setAbout(e.target.value)}
                           className="w-full rounded-2xl border border-slate-200 bg-white p-3.5 text-xs text-slate-900 placeholder:text-slate-400 transition hover:border-slate-300 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                         />
                       </div>
@@ -697,7 +733,14 @@ function ProfileSettingsContent() {
                           if (data) {
                             setFullName(data.fullName || '');
                             setDescription(data.description || '');
+                            setAbout(data.about || '');
                             setPublicUrl(data.publicUrl || '');
+                            setLocation(data.location || '');
+                            setWebsite(data.website || '');
+                            setGithub(data.github || '');
+                            setLinkedin(data.linkedin || '');
+                            setTwitter(data.twitter || '');
+                            setDribbble(data.dribbble || '');
                           }
                         }}
                       >
@@ -1118,7 +1161,7 @@ function ProfileSettingsContent() {
                   {/* Mini Preview Box */}
                   <div className="space-y-3 rounded-2xl border border-slate-100 bg-slate-50/50 p-4">
                     <div className="flex items-center gap-3">
-                      <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-sm font-bold text-white shadow-xs">
+                      <div className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 text-sm font-bold text-white shadow-xs">
                         {avatarPhotoUrl ? (
                           <img
                             src={avatarPhotoUrl}
@@ -1132,32 +1175,87 @@ function ProfileSettingsContent() {
                       <div>
                         <h4 className="text-sm font-bold text-slate-900">{displayName}</h4>
                         <p className="text-xs text-slate-500">Full-stack Developer</p>
-                        <p className="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5">
-                          <MapPin className="h-3 w-3" />
-                          <span>{location}</span>
-                        </p>
+                        {location && (
+                          <p className="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5">
+                            <MapPin className="h-3 w-3" />
+                            <span>{location}</span>
+                          </p>
+                        )}
                       </div>
                     </div>
 
                     {/* Social badges */}
                     <div className="flex items-center gap-1.5 pt-1 text-slate-400">
-                      <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-white border border-slate-200 shadow-2xs">
-                        <GithubIcon className="h-3.5 w-3.5 text-slate-600" />
-                      </span>
-                      <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-white border border-slate-200 shadow-2xs">
-                        <LinkedinIcon className="h-3.5 w-3.5 text-slate-600" />
-                      </span>
-                      <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-white border border-slate-200 shadow-2xs">
-                        <TwitterIcon className="h-3.5 w-3.5 text-slate-600" />
-                      </span>
-                      <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-white border border-slate-200 shadow-2xs">
-                        <DribbbleIcon className="h-3.5 w-3.5 text-slate-600" />
-                      </span>
+                      {github && (
+                        <a
+                          href={github.startsWith('http') ? github : `https://github.com/${github}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex h-6 w-6 items-center justify-center rounded-lg bg-white border border-slate-200 shadow-2xs hover:text-slate-900 transition"
+                          title={`GitHub: ${github}`}
+                        >
+                          <GithubIcon className="h-3.5 w-3.5 text-slate-600" />
+                        </a>
+                      )}
+                      {linkedin && (
+                        <a
+                          href={linkedin.startsWith('http') ? linkedin : `https://linkedin.com/in/${linkedin}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex h-6 w-6 items-center justify-center rounded-lg bg-white border border-slate-200 shadow-2xs hover:text-slate-900 transition"
+                          title={`LinkedIn: ${linkedin}`}
+                        >
+                          <LinkedinIcon className="h-3.5 w-3.5 text-slate-600" />
+                        </a>
+                      )}
+                      {twitter && (
+                        <a
+                          href={twitter.startsWith('http') ? twitter : `https://twitter.com/${twitter.replace(/^@/, '')}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex h-6 w-6 items-center justify-center rounded-lg bg-white border border-slate-200 shadow-2xs hover:text-slate-900 transition"
+                          title={`Twitter: ${twitter}`}
+                        >
+                          <TwitterIcon className="h-3.5 w-3.5 text-slate-600" />
+                        </a>
+                      )}
+                      {dribbble && (
+                        <a
+                          href={dribbble.startsWith('http') ? dribbble : `https://dribbble.com/${dribbble}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex h-6 w-6 items-center justify-center rounded-lg bg-white border border-slate-200 shadow-2xs hover:text-slate-900 transition"
+                          title={`Dribbble: ${dribbble}`}
+                        >
+                          <DribbbleIcon className="h-3.5 w-3.5 text-slate-600" />
+                        </a>
+                      )}
+                      {website && (
+                        <a
+                          href={website.startsWith('http') ? website : `https://${website}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex h-6 w-6 items-center justify-center rounded-lg bg-white border border-slate-200 shadow-2xs hover:text-slate-900 transition"
+                          title={`Website: ${website}`}
+                        >
+                          <Globe className="h-3.5 w-3.5 text-slate-600" />
+                        </a>
+                      )}
+                      {!github && !linkedin && !twitter && !dribbble && !website && (
+                        <>
+                          <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-white border border-slate-200 shadow-2xs opacity-50">
+                            <GithubIcon className="h-3.5 w-3.5 text-slate-400" />
+                          </span>
+                          <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-white border border-slate-200 shadow-2xs opacity-50">
+                            <LinkedinIcon className="h-3.5 w-3.5 text-slate-400" />
+                          </span>
+                        </>
+                      )}
                     </div>
 
                     {/* Bio */}
                     <p className="text-xs text-slate-600 leading-relaxed pt-1">
-                      {description || 'Full-stack developer passionate about building modern web applications and solving real-world problems.'}
+                      {about || description || 'Full-stack developer passionate about building modern web applications and solving real-world problems.'}
                     </p>
 
                     {/* Skills pills */}
@@ -1184,6 +1282,7 @@ function ProfileSettingsContent() {
                   </div>
 
                   <div className="space-y-2 border-t border-slate-100 pt-3 text-xs text-slate-600">
+                    <img src="/cv.png"></img>
                     <div className="flex items-center gap-2">
                       <Check className="h-3.5 w-3.5 text-emerald-600 stroke-[3]" />
                       <span>Uses your profile information</span>
@@ -1217,7 +1316,12 @@ function ProfileSettingsContent() {
 
                 {/* 3. Account Card */}
                 <div className="space-y-3 rounded-3xl border border-slate-200/80 bg-white p-6 shadow-xs">
-                  <h3 className="text-sm font-bold text-slate-900">Account</h3>
+                  <div>
+                    <h3 className="flex items-center gap-2 text-sm font-bold text-slate-900">
+                      <MdOutlineLock />
+                      Account
+                    </h3>
+                  </div>
                   <p className="text-xs text-slate-500 leading-relaxed">
                     Manage your account settings, password and data preferences.
                   </p>

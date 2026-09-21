@@ -6,3 +6,4 @@ export * from './education.service';
 export * from './project.service';
 export * from './language.service';
 export * from './media.service';
+export * from './analytics.service';

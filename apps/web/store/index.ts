@@ -6,3 +6,4 @@ export * from './use-project-store';
 export * from './use-language-store';
 export * from './use-media-store';
 export * from './use-counter-store';
+export * from './use-analytics-store';

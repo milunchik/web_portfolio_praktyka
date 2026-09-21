@@ -72,28 +72,6 @@ export default async function Home() {
             </Button>
           </Link>
         </div>
-
-        {/* API Status Badge */}
-        <div className="mt-8 inline-flex items-center gap-2 rounded-full bg-white px-4 py-1.5 text-xs font-medium text-slate-600 shadow-xs border border-slate-200">
-          <span
-            className={`h-2 w-2 rounded-full ${
-              health ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'
-            }`}
-          />
-          API status:{' '}
-          <span className={health ? 'font-semibold text-emerald-700' : 'font-semibold text-rose-600'}>
-            {health?.status ?? 'offline'}
-          </span>
-        </div>
-
-        {/* Development Auth & State Testing */}
-        <div className="mx-auto mt-16 max-w-xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm text-left">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
-            Development Sandbox
-          </h2>
-          <AuthPanel />
-          <Counter />
-        </div>
       </section>
 
       {/* Footer */}

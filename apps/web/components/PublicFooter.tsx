@@ -3,34 +3,62 @@
 import React from 'react';
 import Link from 'next/link';
 import { Logo } from './Logo';
+import { GithubIcon, LinkedinIcon, TwitterIcon } from './SocialIcons';
 
 export const PublicFooter: React.FC = () => {
   return (
-    <footer className="border-t border-slate-200/80 bg-white py-12">
-      <div className="mx-auto max-w-6xl px-4 sm:px-8">
-        <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
-          <div className="flex flex-col items-center sm:items-start gap-2">
-            <Logo size="sm" />
-            <p className="text-xs text-slate-500">
-              Your code. Your story. In one place.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-6 text-xs text-slate-500">
-            <Link href="/" className="hover:text-emerald-600 transition">
-              Home
-            </Link>
-            <Link href="/signup" className="hover:text-emerald-600 transition">
-              Create Portfolio
-            </Link>
-            <Link href="/signin" className="hover:text-emerald-600 transition">
-              Sign In
-            </Link>
-          </div>
+    <footer className="w-full border-t border-slate-200/80 bg-white py-8 mt-12">
+      <div className="mx-auto flex max-w-[1200px] flex-col items-center justify-between gap-6 px-4 sm:flex-row sm:px-6">
+        {/* Left: Brand + Tagline */}
+        <div className="flex flex-col items-center gap-2 sm:flex-row sm:gap-3">
+          <Logo size="sm" showTagline={false} />
+          <span className="hidden text-slate-300 sm:inline">•</span>
+          <p className="text-xs text-slate-500 font-medium">
+            Build. Share. Grow.
+          </p>
         </div>
 
-        <div className="mt-8 border-t border-slate-100 pt-6 text-center text-[11px] text-slate-400">
-          © {new Date().getFullYear()} Devfolio. All rights reserved.
+        {/* Right: Links + Socials */}
+        <div className="flex flex-wrap items-center justify-center gap-6 text-xs font-medium text-slate-500">
+          <Link href="/#about" className="transition hover:text-emerald-600">
+            About
+          </Link>
+          <Link href="/privacy" className="transition hover:text-emerald-600">
+            Privacy
+          </Link>
+          <Link href="/terms" className="transition hover:text-emerald-600">
+            Terms
+          </Link>
+
+          <div className="flex items-center gap-3 pl-2 border-l border-slate-200 text-slate-400">
+            <a
+              href="https://github.com"
+              target="_blank"
+              rel="noreferrer"
+              className="hover:text-slate-700 transition"
+              aria-label="GitHub"
+            >
+              <GithubIcon className="h-4 w-4" />
+            </a>
+            <a
+              href="https://twitter.com"
+              target="_blank"
+              rel="noreferrer"
+              className="hover:text-slate-700 transition"
+              aria-label="Twitter"
+            >
+              <TwitterIcon className="h-4 w-4" />
+            </a>
+            <a
+              href="https://linkedin.com"
+              target="_blank"
+              rel="noreferrer"
+              className="hover:text-slate-700 transition"
+              aria-label="LinkedIn"
+            >
+              <LinkedinIcon className="h-4 w-4" />
+            </a>
+          </div>
         </div>
       </div>
     </footer>

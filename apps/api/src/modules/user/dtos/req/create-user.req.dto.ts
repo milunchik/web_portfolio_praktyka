@@ -5,6 +5,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  Length,
   Matches,
 } from 'class-validator';
 import { REGEX } from '../../../../shared/constants';
@@ -39,7 +40,14 @@ export class CreateUserReqDto {
   @ApiPropertyOptional({ example: 'Software engineer building web apps' })
   @IsOptional()
   @IsString()
+  @Length(0, 500)
   description?: string;
+
+  @ApiPropertyOptional({ example: 'Passionate software developer with 5+ years of experience...' })
+  @IsOptional()
+  @IsString()
+  @Length(0, 1500)
+  about?: string;
 
   @ApiPropertyOptional({ example: '1/172678000-avatar.jpg' })
   @IsOptional()

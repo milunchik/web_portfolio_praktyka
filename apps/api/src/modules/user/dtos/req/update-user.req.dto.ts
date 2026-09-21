@@ -31,6 +31,12 @@ export class UpdateUserReqDto {
   @Length(0, 500)
   description?: string;
 
+  @ApiPropertyOptional({ example: 'Passionate software developer with 5+ years of experience...' })
+  @IsOptional()
+  @IsString()
+  @Length(0, 1500)
+  about?: string;
+
   @ApiPropertyOptional({ example: 'john-doe' })
   @IsOptional()
   @IsString()
@@ -45,6 +51,42 @@ export class UpdateUserReqDto {
   @IsOptional()
   @IsEnum(['admin', 'user'] as const)
   role?: UserRole;
+
+  @ApiPropertyOptional({ example: 'Kyiv, Ukraine', nullable: true })
+  @IsOptional()
+  @IsString()
+  @Length(0, 100)
+  location?: string | null;
+
+  @ApiPropertyOptional({ example: 'https://jane-doe.dev', nullable: true })
+  @IsOptional()
+  @IsString()
+  @Length(0, 200)
+  website?: string | null;
+
+  @ApiPropertyOptional({ example: 'jane-doe', nullable: true })
+  @IsOptional()
+  @IsString()
+  @Length(0, 100)
+  github?: string | null;
+
+  @ApiPropertyOptional({ example: 'janedoe', nullable: true })
+  @IsOptional()
+  @IsString()
+  @Length(0, 100)
+  linkedin?: string | null;
+
+  @ApiPropertyOptional({ example: 'jane_doe', nullable: true })
+  @IsOptional()
+  @IsString()
+  @Length(0, 100)
+  twitter?: string | null;
+
+  @ApiPropertyOptional({ example: 'jane-doe', nullable: true })
+  @IsOptional()
+  @IsString()
+  @Length(0, 100)
+  dribbble?: string | null;
 
   @ApiPropertyOptional({
     example: {

@@ -7,7 +7,14 @@ export interface UpdateUserRequest {
   password?: string;
   fullName?: string;
   publicUrl?: string;
-  description?: string;
+  description?: string | null;
+  about?: string | null;
   fileName?: string | null;
   cvOptions?: CvDisplayOptions | null;
+  location?: string | null;
+  website?: string | null;
+  github?: string | null;
+  linkedin?: string | null;
+  twitter?: string | null;
+  dribbble?: string | null;
 }

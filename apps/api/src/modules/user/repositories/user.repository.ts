@@ -23,6 +23,13 @@ export class UserEntity {
     public readonly fileName: string | null = null,
     public readonly avatarUrl: string | null = null,
     public readonly cvOptions: CvDisplayOptions | null = null,
+    public readonly location: string | null = null,
+    public readonly website: string | null = null,
+    public readonly github: string | null = null,
+    public readonly linkedin: string | null = null,
+    public readonly twitter: string | null = null,
+    public readonly dribbble: string | null = null,
+    public readonly about: string | null = null,
   ) {}
 
   toSafeDto(): SafeUserResDto {
@@ -31,12 +38,19 @@ export class UserEntity {
       email: this.email,
       fullName: this.fullName,
       description: this.description,
+      about: this.about,
       publicUrl: this.publicUrl,
       role: this.role,
       fileName: this.fileName,
       avatarUrl: this.avatarUrl,
       fileUrl: this.avatarUrl,
       cvOptions: this.cvOptions,
+      location: this.location,
+      website: this.website,
+      github: this.github,
+      linkedin: this.linkedin,
+      twitter: this.twitter,
+      dribbble: this.dribbble,
       education: this.education,
       experience: this.experience,
       medias: this.medias,
@@ -55,8 +69,15 @@ export interface CreateUserData {
   role?: UserRole;
   publicUrl: string;
   description?: string | null;
+  about?: string | null;
   fileName?: string | null;
   cvOptions?: CvDisplayOptions | null;
+  location?: string | null;
+  website?: string | null;
+  github?: string | null;
+  linkedin?: string | null;
+  twitter?: string | null;
+  dribbble?: string | null;
 }
 
 export interface UpdateUserData {
@@ -66,8 +87,15 @@ export interface UpdateUserData {
   role?: UserRole;
   publicUrl?: string;
   description?: string | null;
+  about?: string | null;
   fileName?: string | null;
   cvOptions?: CvDisplayOptions | null;
+  location?: string | null;
+  website?: string | null;
+  github?: string | null;
+  linkedin?: string | null;
+  twitter?: string | null;
+  dribbble?: string | null;
 }
 
 export abstract class UserRepository {

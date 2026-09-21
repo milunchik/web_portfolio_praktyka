@@ -130,7 +130,7 @@ export const AppSidebar: React.FC = () => {
       </div>
 
       {/* Bottom: Motivational Pro Card */}
-      <div className="rounded-2xl border border-slate-100 bg-gradient-to-br from-slate-50 to-emerald-50/40 p-4 text-xs text-slate-600 space-y-2 shadow-xs">
+      <div className="rounded-2xl border border-slate-100 bg-gradient-to-br  from-slate-50 to-emerald-50/40 p-4 text-xs text-slate-800 space-y-2 shadow-xs">
         <div className="flex items-center gap-2 text-emerald-700 font-medium">
           <Code2 className="h-4 w-4" />
           <span>Your story. In one place.</span>
@@ -138,6 +138,7 @@ export const AppSidebar: React.FC = () => {
         <p className="text-[11px] text-slate-500 leading-relaxed">
           Build a portfolio that opens doors to new opportunities.
         </p>
+        <img src='./laptop.png' alt="laptop"></img>
       </div>
     </aside>
   );

@@ -10,12 +10,19 @@ export interface SafeUser {
   email: string;
   fullName: string;
   description: string | null;
+  about?: string | null;
   publicUrl: string;
   role: UserRole | string;
   fileName?: string | null;
   fileUrl?: string | null;
   avatarUrl?: string | null;
   cvOptions?: CvDisplayOptions | null;
+  location?: string | null;
+  website?: string | null;
+  github?: string | null;
+  linkedin?: string | null;
+  twitter?: string | null;
+  dribbble?: string | null;
   education?: any[];
   experience?: any[];
   medias?: any[];
@@ -117,4 +124,66 @@ export interface PaginatedResponse<T> {
     limit: number;
     totalPages: number;
   };
+}
+
+export type AnalyticsEventType =
+  | 'profile_view'
+  | 'cv_download'
+  | 'contact_click'
+  | 'project_click'
+  | 'social_link_click';
+
+export type AnalyticsVisitorType = 'authenticated' | 'anonymous';
+
+export type AnalyticsViewsPeriod = '7d' | '30d' | '90d';
+
+export interface TrackAnalyticsEventDto {
+  publicUrl?: string;
+  portfolioOwnerId?: number;
+  eventType: AnalyticsEventType;
+  anonymousVisitorId?: string;
+  projectId?: number;
+  target?: string;
+}
+
+export interface AnalyticsVisitorBreakdown {
+  authenticated: number;
+  anonymous: number;
+}
+
+export interface AnalyticsSummaryDto {
+  totalViews: number;
+  viewsByVisitorType: AnalyticsVisitorBreakdown;
+  uniqueVisitors: number;
+  uniqueVisitorsByType: AnalyticsVisitorBreakdown;
+  viewsToday: number;
+  viewsThisWeek: number;
+  viewsThisMonth: number;
+  cvDownloads: number;
+  contactClicks: number;
+  projectClicks: number;
+  socialLinkClicks: number;
+}
+
+export interface AnalyticsViewsPointDto {
+  date: string;
+  total: number;
+  authenticated: number;
+  anonymous: number;
+}
+
+export interface AnalyticsTopProjectDto {
+  projectId: number;
+  projectName: string;
+  clicks: number;
+}
+
+export interface AnalyticsActivityItemDto {
+  id: number;
+  eventType: AnalyticsEventType;
+  target: string | null;
+  projectId: number | null;
+  projectName: string | null;
+  visitorType: AnalyticsVisitorType;
+  createdAt: string | Date;
 }

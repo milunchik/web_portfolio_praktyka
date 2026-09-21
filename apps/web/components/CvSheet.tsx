@@ -1,7 +1,11 @@
 'use client';
 
 import React from 'react';
-import { Mail, Globe } from 'lucide-react';
+import { Mail, Globe, MapPin } from 'lucide-react';
+import {
+  GithubIcon,
+  LinkedinIcon,
+} from './SocialIcons';
 import type { SafeUser, Experience, Education, Project } from '@repo/contracts';
 
 export interface CvDisplayOptionsState {
@@ -31,34 +35,45 @@ const formatDateRange = (start: string | Date, end: string | Date | null | undef
   return `${startFormatted} — ${endFormatted}`;
 };
 
+const parseDateVal = (val: string | Date | null | undefined, isEnd = false): number => {
+  if (!val) return isEnd ? Infinity : 0;
+  if (val instanceof Date) return val.getTime();
+  const str = String(val).trim();
+  if (!str || str.toLowerCase() === 'present') return Infinity;
+  const parsed = new Date(str).getTime();
+  if (!isNaN(parsed)) return parsed;
+  const num = parseInt(str, 10);
+  if (!isNaN(num)) return new Date(num, 0, 1).getTime();
+  return 0;
+};
+
+const sortTimelineDesc = <T extends { startDate?: string | Date | null; endDate?: string | Date | null }>(items: T[]): T[] => {
+  return [...items].sort((a, b) => {
+    const aEnd = parseDateVal(a.endDate, true);
+    const bEnd = parseDateVal(b.endDate, true);
+    if (aEnd !== bEnd) {
+      return bEnd - aEnd;
+    }
+    const aStart = parseDateVal(a.startDate, false);
+    const bStart = parseDateVal(b.startDate, false);
+    return bStart - aStart;
+  });
+};
+
 const formatLanguageLevel = (level: string) => {
   return level
     .replace(/_/g, ' ')
     .replace(/\b\w/g, (char) => char.toUpperCase());
 };
 
-const getLevelPercentage = (level: string) => {
-  switch (level?.toLowerCase()) {
-    case 'elementary':
-      return '20%';
-    case 'pre_intermediate':
-      return '40%';
-    case 'intermediate':
-      return '60%';
-    case 'upper_intermediate':
-      return '80%';
-    case 'advanced':
-      return '100%';
-    default:
-      return '60%';
-  }
-};
-
 export const CvSheet: React.FC<CvSheetProps> = ({ user, options }) => {
-  const experiences = (user.experience || []) as Experience[];
-  const educations = (user.education || []) as Education[];
+  const rawExperiences = (user.experience || []) as Experience[];
+  const rawEducations = (user.education || []) as Education[];
   const projects = (user.projects || []) as Project[];
   const rawLanguages = (user.languages || []) as any[];
+
+  const experiences = sortTimelineDesc(rawExperiences);
+  const educations = sortTimelineDesc(rawEducations);
 
   // Collect unique skills from experience
   const uniqueSkills = Array.from(
@@ -97,11 +112,35 @@ export const CvSheet: React.FC<CvSheetProps> = ({ user, options }) => {
           </p>
 
           {options.showContact && (
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-2 text-xs text-slate-500">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 pt-2 text-xs text-slate-500">
+              {user.location && (
+                <span className="flex items-center gap-1">
+                  <MapPin className="h-3.5 w-3.5 text-slate-400 print:hidden" />
+                  <span>{user.location}</span>
+                </span>
+              )}
               {user.email && (
                 <span className="flex items-center gap-1.5">
                   <Mail className="h-3.5 w-3.5 text-slate-400 print:hidden" />
                   <span>{user.email}</span>
+                </span>
+              )}
+              {user.website && (
+                <span className="flex items-center gap-1 font-mono">
+                  <Globe className="h-3.5 w-3.5 text-slate-400 print:hidden" />
+                  <span>{user.website.replace(/^https?:\/\//, '')}</span>
+                </span>
+              )}
+              {user.github && (
+                <span className="flex items-center gap-1 font-mono">
+                  <GithubIcon className="h-3.5 w-3.5 text-slate-400 print:hidden" />
+                  <span>github.com/{user.github.replace(/^https?:\/\/github\.com\//, '')}</span>
+                </span>
+              )}
+              {user.linkedin && (
+                <span className="flex items-center gap-1 font-mono">
+                  <LinkedinIcon className="h-3.5 w-3.5 text-slate-400 print:hidden" />
+                  <span>linkedin.com/in/{user.linkedin.replace(/^https?:\/\/(www\.)?linkedin\.com\/in\//, '')}</span>
                 </span>
               )}
               {publicPortfolioUrl && (
@@ -131,55 +170,43 @@ export const CvSheet: React.FC<CvSheetProps> = ({ user, options }) => {
 
       <div className="space-y-6 pt-6 text-xs print:pt-4 print:space-y-5">
         {/* SUMMARY / ABOUT */}
-        {options.showAbout && user.description && (
+        {options.showAbout && (user.about || user.description) && (
           <section className="space-y-2 print:break-inside-avoid">
             <h2 className="text-xs font-bold uppercase tracking-wider text-emerald-700 border-b border-emerald-100 pb-1">
               Professional Summary
             </h2>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              {user.description}
+            <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-line">
+              {user.about || user.description}
             </p>
           </section>
         )}
 
         {/* EXPERIENCE */}
         {options.showExperience && experiences.length > 0 && (
-          <section className="space-y-4 print:break-inside-avoid">
+          <section className="space-y-3 print:break-inside-avoid">
             <h2 className="text-xs font-bold uppercase tracking-wider text-emerald-700 border-b border-emerald-100 pb-1">
               Work Experience
             </h2>
-            <div className="space-y-4 print:space-y-3">
+            <div className="space-y-3">
               {experiences.map((exp) => (
-                <div key={exp.id} className="space-y-1 print:break-inside-avoid">
-                  <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between">
-                    <span className="font-bold text-slate-900 text-sm">
-                      {exp.position}{' '}
-                      <span className="text-emerald-700 font-semibold font-sans">
-                        @ {exp.company}
-                      </span>
-                    </span>
-                    <span className="text-[11px] font-mono text-slate-400">
+                <div key={exp.id} className="space-y-1">
+                  <div className="flex items-baseline justify-between">
+                    <div>
+                      <span className="font-bold text-slate-900">{exp.position}</span>
+                      <span className="text-emerald-700 font-semibold"> @ {exp.company}</span>
+                    </div>
+                    <span className="font-mono text-[11px] text-slate-400">
                       {formatDateRange(exp.startDate, exp.endDate)}
                     </span>
                   </div>
-
                   {exp.description && (
-                    <p className="text-slate-600 leading-relaxed">
-                      {exp.description}
-                    </p>
+                    <p className="text-slate-600 leading-relaxed">{exp.description}</p>
                   )}
-
                   {exp.skills && exp.skills.length > 0 && (
-                    <div className="flex flex-wrap gap-1 pt-1">
-                      {exp.skills.map((sk) => (
-                        <span
-                          key={sk}
-                          className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-mono text-slate-600"
-                        >
-                          {sk}
-                        </span>
-                      ))}
-                    </div>
+                    <p className="text-[11px] text-slate-400">
+                      <span className="font-semibold text-slate-500">Skills: </span>
+                      {exp.skills.join(', ')}
+                    </p>
                   )}
                 </div>
               ))}
@@ -189,25 +216,20 @@ export const CvSheet: React.FC<CvSheetProps> = ({ user, options }) => {
 
         {/* EDUCATION */}
         {options.showEducation && educations.length > 0 && (
-          <section className="space-y-3 print:break-inside-avoid">
+          <section className="space-y-2.5 print:break-inside-avoid">
             <h2 className="text-xs font-bold uppercase tracking-wider text-emerald-700 border-b border-emerald-100 pb-1">
               Education
             </h2>
             <div className="space-y-2">
               {educations.map((edu) => (
-                <div
-                  key={edu.id}
-                  className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between print:break-inside-avoid"
-                >
+                <div key={edu.id} className="flex items-baseline justify-between">
                   <div>
-                    <span className="font-bold text-slate-900">
-                      {edu.title}
-                    </span>
-                    <span className="text-slate-500 capitalize ml-1.5">
-                      — {edu.degree} Degree
-                    </span>
+                    <span className="font-bold text-slate-900">{edu.title}</span>
+                    {edu.degree && (
+                      <span className="text-slate-500 capitalize"> — {edu.degree} Degree</span>
+                    )}
                   </div>
-                  <span className="text-[11px] font-mono text-slate-400">
+                  <span className="font-mono text-[11px] text-slate-400">
                     {formatDateRange(edu.startDate, edu.endDate)}
                   </span>
                 </div>
@@ -218,22 +240,15 @@ export const CvSheet: React.FC<CvSheetProps> = ({ user, options }) => {
 
         {/* PROJECTS */}
         {options.showProjects && projects.length > 0 && (
-          <section className="space-y-3 print:break-inside-avoid">
+          <section className="space-y-2.5 print:break-inside-avoid">
             <h2 className="text-xs font-bold uppercase tracking-wider text-emerald-700 border-b border-emerald-100 pb-1">
               Featured Projects
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 print:grid-cols-2">
+            <div className="space-y-2.5">
               {projects.map((proj) => (
-                <div
-                  key={proj.id}
-                  className="rounded-xl border border-slate-100 bg-slate-50/60 p-3 space-y-1 print:border-slate-200 print:bg-white print:break-inside-avoid"
-                >
-                  <h4 className="font-bold text-slate-900 text-xs">
-                    {proj.title}
-                  </h4>
-                  <p className="text-[11px] text-slate-600 line-clamp-2 leading-relaxed">
-                    {proj.description}
-                  </p>
+                <div key={proj.id} className="space-y-0.5">
+                  <h3 className="font-bold text-slate-900">{proj.title}</h3>
+                  <p className="text-slate-600 leading-relaxed">{proj.description}</p>
                 </div>
               ))}
             </div>
@@ -242,50 +257,31 @@ export const CvSheet: React.FC<CvSheetProps> = ({ user, options }) => {
 
         {/* SKILLS */}
         {options.showSkills && uniqueSkills.length > 0 && (
-          <section className="space-y-2 print:break-inside-avoid">
+          <section className="space-y-1.5 print:break-inside-avoid">
             <h2 className="text-xs font-bold uppercase tracking-wider text-emerald-700 border-b border-emerald-100 pb-1">
               Technical Skills
             </h2>
-            <div className="flex flex-wrap gap-1.5">
-              {uniqueSkills.map((sk) => (
-                <span
-                  key={sk}
-                  className="rounded-lg border border-slate-200 bg-white px-2 py-0.5 text-xs font-mono font-medium text-slate-700 print:bg-slate-50"
-                >
-                  {sk}
-                </span>
-              ))}
-            </div>
+            <p className="text-slate-700 leading-relaxed font-mono text-[11px]">
+              {uniqueSkills.join('  •  ')}
+            </p>
           </section>
         )}
 
         {/* LANGUAGES */}
         {options.showLanguages && rawLanguages.length > 0 && (
-          <section className="space-y-3 print:break-inside-avoid">
+          <section className="space-y-2 print:break-inside-avoid">
             <h2 className="text-xs font-bold uppercase tracking-wider text-emerald-700 border-b border-emerald-100 pb-1">
               Languages
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 print:grid-cols-2">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
               {rawLanguages.map((item) => {
                 const lang = item.language || item;
                 const name = lang.name || 'Language';
                 const level = lang.level || 'intermediate';
-                const percent = getLevelPercentage(level);
-
                 return (
-                  <div key={item.id || name} className="space-y-1 print:break-inside-avoid">
-                    <div className="flex justify-between text-xs font-medium">
-                      <span className="text-slate-800">{name}</span>
-                      <span className="text-slate-400 capitalize">
-                        {formatLanguageLevel(level)}
-                      </span>
-                    </div>
-                    <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
-                      <div
-                        className="h-full bg-emerald-500 rounded-full"
-                        style={{ width: percent }}
-                      />
-                    </div>
+                  <div key={item.id || name} className="flex justify-between border-b border-slate-100 pb-1">
+                    <span className="font-medium text-slate-800">{name}</span>
+                    <span className="text-slate-400 capitalize">{formatLanguageLevel(level)}</span>
                   </div>
                 );
               })}

@@ -11,6 +11,7 @@ import {
   ProjectModule,
   LanguageModule,
   MediaModule,
+  AnalyticsModule,
 } from './modules';
 
 @Module({
@@ -27,6 +28,7 @@ import {
     ProjectModule,
     LanguageModule,
     MediaModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
