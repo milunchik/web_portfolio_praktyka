@@ -3,9 +3,19 @@ services:
     build:
       context: .
       target: api
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    env_file:
+      - path: .env
+        required: false
+      - path: apps/api/.env
+        required: false
     environment:
       PORT: 3001
-      WEB_URL: http://localhost:3000
+      NODE_ENV: ${NODE_ENV:-prod}
+      WEB_URL: ${WEB_URL:-http://localhost:3000}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:ritipe45@host.docker.internal:5432/portfolio?schema=public}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
     healthcheck:
       test:
         - CMD
@@ -17,7 +27,7 @@ services:
       retries: 10
       start_period: 5s
     ports:
-      - '3001:3001'
+      - '${PORT:-3001}:3001'
     restart: unless-stopped
 
   web:
@@ -25,15 +35,20 @@ services:
       context: .
       target: web
       args:
-        NEXT_PUBLIC_API_URL: http://localhost:3001
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
     depends_on:
       api:
         condition: service_healthy
+    env_file:
+      - path: .env
+        required: false
+      - path: apps/web/.env
+        required: false
     environment:
-      API_URL: http://api:3001
-      NEXT_PUBLIC_API_URL: http://localhost:3001
+      API_URL: ${API_URL:-http://api:3001}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
       HOSTNAME: 0.0.0.0
       PORT: 3000
     ports:
-      - '3000:3000'
+      - '${WEB_PORT:-3000}:3000'
     restart: unless-stopped

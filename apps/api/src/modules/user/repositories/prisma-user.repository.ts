@@ -220,6 +220,16 @@ export class PrismaUserRepository extends UserRepository {
   }
 
   async delete(id: number): Promise<void> {
-    await this.prisma.user.delete({ where: { id } });
+    await this.prisma.$transaction([
+      this.prisma.session.deleteMany({ where: { userId: id } }),
+      this.prisma.experience.deleteMany({ where: { userId: id } }),
+      this.prisma.education.deleteMany({ where: { userId: id } }),
+      this.prisma.project.deleteMany({ where: { userId: id } }),
+      this.prisma.languageUser.deleteMany({ where: { userId: id } }),
+      this.prisma.media.deleteMany({ where: { userId: id } }),
+      this.prisma.analyticsEvent.deleteMany({ where: { portfolioOwnerId: id } }),
+      this.prisma.analyticsEvent.deleteMany({ where: { visitorUserId: id } }),
+      this.prisma.user.delete({ where: { id } }),
+    ]);
   }
 }

@@ -25,6 +25,10 @@ export class AuthService {
   async logout(token?: string): Promise<{ message: string }> {
     return this.client.get<{ message: string }>('/auth/logout', { token });
   }
+
+  async logoutAll(token?: string): Promise<{ message: string }> {
+    return this.client.post<{ message: string }>('/auth/logout-all', {}, { token });
+  }
 }
 
 export const authService = new AuthService();

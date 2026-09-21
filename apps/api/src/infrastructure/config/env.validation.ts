@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const envSchema = z.object({
-  NODE_ENV: z.enum(['dev', 'test', 'prod']).default('dev'),
+  NODE_ENV: z.enum(['dev', 'test', 'prod', 'production']).default('dev'),
   PORT: z.coerce.number().int().positive().default(5000),
 
   DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),

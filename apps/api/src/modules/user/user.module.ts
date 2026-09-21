@@ -9,6 +9,9 @@ import {
   FindUserByPublicUrlService,
   UpdateUserService,
   GenerateUserCvPdfService,
+  UpdateEmailService,
+  ChangePasswordService,
+  DeleteUserService,
 } from './services';
 
 @Module({
@@ -21,6 +24,9 @@ import {
     FindUserByPublicUrlService,
     UpdateUserService,
     GenerateUserCvPdfService,
+    UpdateEmailService,
+    ChangePasswordService,
+    DeleteUserService,
   ],
   exports: [
     UserRepository,
@@ -30,6 +36,9 @@ import {
     FindUserByPublicUrlService,
     UpdateUserService,
     GenerateUserCvPdfService,
+    UpdateEmailService,
+    ChangePasswordService,
+    DeleteUserService,
   ],
 })
 export class UserModule {}

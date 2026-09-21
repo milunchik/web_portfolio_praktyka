@@ -46,4 +46,20 @@ export class AuthController {
   async logout(@CurrentUser() userId: number) {
     return this.logoutService.execute(userId);
   }
+
+  @ApiOperation({ summary: 'Logout and revoke all sessions' })
+  @Post('logout')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('AccessToken')
+  async postLogout(@CurrentUser() userId: number) {
+    return this.logoutService.execute(userId);
+  }
+
+  @ApiOperation({ summary: 'Logout all devices and revoke all sessions' })
+  @Post('logout-all')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('AccessToken')
+  async logoutAll(@CurrentUser() userId: number) {
+    return this.logoutService.execute(userId);
+  }
 }

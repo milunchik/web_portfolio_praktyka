@@ -2,8 +2,11 @@
 
 import { useAuthStore, useUserStore } from '../../store';
 import React, { Suspense, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { AppSidebar } from '../../components/AppSidebar';
 import { AppHeader } from '../../components/AppHeader';
+import { userService } from '../../services/user.service';
+import { authService } from '../../services/auth.service';
 import {
     CheckCircle2,
     KeyRound,
@@ -17,7 +20,8 @@ import {
 } from 'lucide-react';
 
 function Settings() {
-    const { user } = useAuthStore();
+    const router = useRouter();
+    const { user, logout } = useAuthStore();
     const { profile, fetchProfile } = useUserStore();
 
     const [email, setEmail] = useState('');
@@ -63,24 +67,24 @@ function Settings() {
         setIsSavingEmail(true);
 
         try {
-            /*
-             * TODO:
-             * Connect email update API here.
-             *
-             * Example:
-             *
-             * const updated = await updateEmail({
-             *     email: email.trim(),
-             * });
-             */
+            const updated = await userService.updateEmail(email.trim());
+            if (updated) {
+                useAuthStore.getState().setUser(updated);
+            }
 
             setEmailSuccess(true);
 
             setTimeout(() => {
                 setEmailSuccess(false);
             }, 3000);
-        } catch {
-            setEmailError('An error occurred while updating email');
+        } catch (err: any) {
+            setEmailError(
+                err?.message
+                    ? Array.isArray(err.message)
+                        ? err.message.join(', ')
+                        : err.message
+                    : 'An error occurred while updating email',
+            );
         } finally {
             setIsSavingEmail(false);
         }
@@ -115,17 +119,10 @@ function Settings() {
         setIsSavingPassword(true);
 
         try {
-            /*
-             * TODO:
-             * Connect change password API here.
-             *
-             * Example:
-             *
-             * await changePassword({
-             *     currentPassword,
-             *     newPassword,
-             * });
-             */
+            await userService.changePassword({
+                currentPassword,
+                newPassword,
+            });
 
             setCurrentPassword('');
             setNewPassword('');
@@ -136,8 +133,14 @@ function Settings() {
             setTimeout(() => {
                 setPasswordSuccess(false);
             }, 3000);
-        } catch {
-            setPasswordError('An error occurred while changing password');
+        } catch (err: any) {
+            setPasswordError(
+                err?.message
+                    ? Array.isArray(err.message)
+                        ? err.message.join(', ')
+                        : err.message
+                    : 'An error occurred while changing password',
+            );
         } finally {
             setIsSavingPassword(false);
         }
@@ -147,14 +150,12 @@ function Settings() {
         setIsLoggingOutSessions(true);
 
         try {
-            /*
-             * TODO:
-             * Connect logout all sessions API here.
-             *
-             * Example:
-             *
-             * await logoutAllSessions();
-             */
+            await authService.logoutAll();
+            await logout();
+            router.push('/signin');
+        } catch {
+            await logout();
+            router.push('/signin');
         } finally {
             setIsLoggingOutSessions(false);
         }
@@ -172,14 +173,17 @@ function Settings() {
         setIsDeletingAccount(true);
 
         try {
-            /*
-             * TODO:
-             * Connect delete account API here.
-             *
-             * Example:
-             *
-             * await deleteAccount();
-             */
+            await userService.deleteAccount();
+            await logout();
+            router.push('/signup');
+        } catch (err: any) {
+            alert(
+                err?.message
+                    ? Array.isArray(err.message)
+                        ? err.message.join(', ')
+                        : err.message
+                    : 'Failed to delete account',
+            );
         } finally {
             setIsDeletingAccount(false);
         }

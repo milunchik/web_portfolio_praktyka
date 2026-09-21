@@ -26,7 +26,7 @@ export class AppConfigService {
   }
 
   get isProd(): boolean {
-    return this.nodeEnv === 'prod';
+    return this.nodeEnv === 'prod' || this.nodeEnv === 'production';
   }
 
   get port(): number {

@@ -4,3 +4,6 @@ export * from './find-user-by-email.service';
 export * from './find-user-by-public-url.service';
 export * from './update-user.service';
 export * from './generate-user-cv-pdf.service';
+export * from './update-email.service';
+export * from './change-password.service';
+export * from './delete-user.service';

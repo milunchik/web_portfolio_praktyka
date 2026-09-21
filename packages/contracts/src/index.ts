@@ -116,6 +116,19 @@ export interface CvDisplayOptions {
   showProjects?: boolean;
 }
 
+export interface UpdateEmailRequest {
+  email: string;
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface MessageResponse {
+  message: string;
+}
+
 export interface PaginatedResponse<T> {
   data: T[];
   meta: {

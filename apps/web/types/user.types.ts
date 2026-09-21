@@ -1,6 +1,18 @@
-import type { SafeUser, CvDisplayOptions } from '@repo/contracts';
+import type {
+  SafeUser,
+  CvDisplayOptions,
+  UpdateEmailRequest,
+  ChangePasswordRequest,
+  MessageResponse,
+} from '@repo/contracts';
 
-export type { SafeUser, CvDisplayOptions };
+export type {
+  SafeUser,
+  CvDisplayOptions,
+  UpdateEmailRequest,
+  ChangePasswordRequest,
+  MessageResponse,
+};
 
 export interface UpdateUserRequest {
   email?: string;

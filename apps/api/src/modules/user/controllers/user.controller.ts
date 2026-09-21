@@ -1,11 +1,12 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
-  Header,
   Param,
   ParseIntPipe,
   Patch,
+  Post,
   Query,
   Res,
   UseGuards,
@@ -17,9 +18,17 @@ import {
   FindUserByPublicUrlService,
   UpdateUserService,
   GenerateUserCvPdfService,
+  UpdateEmailService,
+  ChangePasswordService,
+  DeleteUserService,
 } from '../services';
-import { UpdateUserReqDto, GenerateCvQueryDto } from '../dtos/req';
-import { SafeUserResDto } from '../dtos/res';
+import {
+  UpdateUserReqDto,
+  GenerateCvQueryDto,
+  UpdateEmailReqDto,
+  ChangePasswordReqDto,
+} from '../dtos/req';
+import { SafeUserResDto, MessageResDto } from '../dtos/res';
 import { JwtAuthGuard } from '../../../shared/guards';
 import { CurrentUser } from '../../../shared/decorators';
 
@@ -31,6 +40,9 @@ export class UserController {
     private readonly findUserByPublicUrl: FindUserByPublicUrlService,
     private readonly updateUserService: UpdateUserService,
     private readonly generateUserCvPdfService: GenerateUserCvPdfService,
+    private readonly updateEmailService: UpdateEmailService,
+    private readonly changePasswordService: ChangePasswordService,
+    private readonly deleteUserService: DeleteUserService,
   ) {}
 
   @ApiOperation({ summary: 'Get current user profile' })
@@ -41,6 +53,40 @@ export class UserController {
   async getMe(@CurrentUser() userId: number): Promise<SafeUserResDto> {
     const user = await this.findUserById.execute(userId);
     return user.toSafeDto();
+  }
+
+  @ApiOperation({ summary: 'Update current user email address' })
+  @ApiResponse({ status: 200, type: SafeUserResDto })
+  @ApiBearerAuth('AccessToken')
+  @UseGuards(JwtAuthGuard)
+  @Patch('me/email')
+  async updateEmail(
+    @CurrentUser() userId: number,
+    @Body() dto: UpdateEmailReqDto,
+  ): Promise<SafeUserResDto> {
+    const user = await this.updateEmailService.execute(userId, dto);
+    return user.toSafeDto();
+  }
+
+  @ApiOperation({ summary: 'Change current user password' })
+  @ApiResponse({ status: 200, type: MessageResDto })
+  @ApiBearerAuth('AccessToken')
+  @UseGuards(JwtAuthGuard)
+  @Post('me/change-password')
+  async changePassword(
+    @CurrentUser() userId: number,
+    @Body() dto: ChangePasswordReqDto,
+  ): Promise<MessageResDto> {
+    return this.changePasswordService.execute(userId, dto);
+  }
+
+  @ApiOperation({ summary: 'Delete current user account and all data' })
+  @ApiResponse({ status: 200, type: MessageResDto })
+  @ApiBearerAuth('AccessToken')
+  @UseGuards(JwtAuthGuard)
+  @Delete('me')
+  async deleteMe(@CurrentUser() userId: number): Promise<MessageResDto> {
+    return this.deleteUserService.execute(userId);
   }
 
   @ApiOperation({ summary: 'Get current user CV as PDF' })
