@@ -9,6 +9,14 @@
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
+    "dev:backend": "turbo dev --filter=@repo/api",
+    "dev:frontend": "turbo dev --filter=@repo/web",
+    "dev:api": "turbo dev --filter=@repo/api",
+    "dev:web": "turbo dev --filter=@repo/web",
+    "start:backend": "npm run start -w @repo/api",
+    "start:frontend": "npm run start -w @repo/web",
+    "start:api": "npm run start -w @repo/api",
+    "start:web": "npm run start -w @repo/web",
     "lint": "turbo lint",
     "typecheck": "turbo typecheck",
     "format": "prettier --write ."
