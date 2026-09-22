@@ -70,4 +70,4 @@ COPY --from=web-build /app/apps/web/public ./apps/web/public
 
 EXPOSE 3000
 
-CMD ["npm", "run", "start", "--workspace", "@repo/web"]
+CMD ["npm", "run", "start", "--prefix", "apps/web"]
