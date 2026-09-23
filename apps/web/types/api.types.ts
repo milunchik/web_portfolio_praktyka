@@ -7,4 +7,5 @@ export interface ApiError {
 export interface RequestOptions extends RequestInit {
   token?: string | null;
   params?: Record<string, string | number | boolean | undefined>;
+  _retry?: boolean;
 }

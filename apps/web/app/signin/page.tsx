@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Mail,
   Lock,
   AlertCircle,
+  Loader2,
 } from 'lucide-react';
 
 import { Logo } from '../../components/Logo';
@@ -14,8 +15,10 @@ import { Input } from '../../components/Input';
 import { Button } from '../../components/Button';
 import { useAuthStore } from '../../store/use-auth-store';
 
-export default function SignInPage() {
+function SignInContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const fromParam = searchParams?.get('from');
 
   const {
     login,
@@ -47,7 +50,8 @@ export default function SignInPage() {
     const success = await login(email.trim(), password);
 
     if (success) {
-      router.push('/dashboard');
+      const destination = fromParam ? decodeURIComponent(fromParam) : '/dashboard';
+      router.push(destination);
     }
   };
 
@@ -399,5 +403,19 @@ export default function SignInPage() {
           </div>
         </section>
       </main>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen w-full items-center justify-center bg-white">
+          <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
+        </div>
+      }
+    >
+      <SignInContent />
+    </Suspense>
   );
 }
