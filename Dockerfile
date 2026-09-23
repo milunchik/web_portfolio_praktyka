@@ -42,9 +42,9 @@ ENV NODE_ENV=production
 ENV PORT=3001
 WORKDIR /app
 
-COPY package.json ./
+COPY package.json package-lock.json ./
+COPY apps/api/package.json ./apps/api/package.json
 COPY --from=production-dependencies /app/node_modules ./node_modules
-COPY --from=production-dependencies /app/apps/api ./apps/api
 COPY --from=production-dependencies /app/packages ./packages
 COPY --from=api-build /app/apps/api/dist ./apps/api/dist
 COPY --from=api-build /app/apps/api/prisma ./apps/api/prisma
@@ -62,8 +62,8 @@ ENV HOSTNAME=0.0.0.0
 WORKDIR /app
 
 COPY package.json package-lock.json ./
+COPY apps/web/package.json ./apps/web/package.json
 COPY --from=production-dependencies /app/node_modules ./node_modules
-COPY --from=production-dependencies /app/apps/web ./apps/web
 COPY --from=production-dependencies /app/packages ./packages
 COPY --from=web-build /app/apps/web/.next ./apps/web/.next
 COPY --from=web-build /app/apps/web/public ./apps/web/public
