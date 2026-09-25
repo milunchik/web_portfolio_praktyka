@@ -87,6 +87,7 @@ function Settings() {
             );
         } finally {
             setIsSavingEmail(false);
+            await fetchProfile();
         }
     };
 
@@ -132,7 +133,7 @@ function Settings() {
 
             setTimeout(() => {
                 setPasswordSuccess(false);
-            }, 3000);
+            }, 5000);
         } catch (err: any) {
             setPasswordError(
                 err?.message

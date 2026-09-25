@@ -340,21 +340,21 @@ function SignInContent() {
                 />
 
                 {/* Forgot password */}
-                <div className="mt-3 flex justify-end">
-                  <Link
-                      href="/forgot-password"
-                      className="
-                    text-sm
-                    font-semibold
-                    text-emerald-600
-                    transition-colors
-                    hover:text-emerald-700
-                    hover:underline
-                  "
-                  >
-                    Forgot password?
-                  </Link>
-                </div>
+                {/*<div className="mt-3 flex justify-end">*/}
+                {/*  <Link*/}
+                {/*      href="/forgot-password"*/}
+                {/*      className="*/}
+                {/*    text-sm*/}
+                {/*    font-semibold*/}
+                {/*    text-emerald-600*/}
+                {/*    transition-colors*/}
+                {/*    hover:text-emerald-700*/}
+                {/*    hover:underline*/}
+                {/*  "*/}
+                {/*  >*/}
+                {/*    Forgot password?*/}
+                {/*  </Link>*/}
+                {/*</div>*/}
               </div>
 
               {/* Sign In */}

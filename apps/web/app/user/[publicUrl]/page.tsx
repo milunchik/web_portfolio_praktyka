@@ -352,10 +352,6 @@ export default function PublicPortfolioPage() {
                     <span>{user.email}</span>
                   </a>
                 )}
-                <span className="inline-flex items-center gap-1.5 text-slate-500">
-                  <Globe className="h-4 w-4 text-emerald-600 shrink-0" />
-                  <span>devfolio.io/{publicUrl}</span>
-                </span>
               </div>
 
               {/* Short Bio */}
